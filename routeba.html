@@ -1,0 +1,3186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazon Route — Operations Admin Command Center</title>
+
+  <!-- Google Fonts: Inter, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Leaflet CSS & JS for Real Fleet Interactive Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Chart.js for Fleet Operations Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Tailwind Configuration for Amazon Route Theme -->
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          colors: {
+            amazonRoute: {
+              bg: '#EAEFF5',
+              sidebar: '#000000',
+              card: '#FFFFFF',
+              cardElevated: '#F1F5F9',
+              cardBorder: '#CBD5E1',
+              blue: '#2563EB',
+              cyan: '#0284C7',
+              emerald: '#059669',
+              amber: '#D97706',
+              rose: '#E11D48',
+              textMain: '#0F172A',
+              textMuted: '#475569',
+              textDim: '#64748B'
+            }
+          },
+          fontFamily: {
+            sans: ['Arial', 'Helvetica', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['Arial', 'Helvetica', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['Arial', 'Helvetica', 'system-ui', '-apple-system', 'sans-serif']
+          },
+          boxShadow: {
+            'card': '0 4px 20px -2px rgba(100, 116, 139, 0.12), 0 2px 6px -1px rgba(100, 116, 139, 0.08)'
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Clean Normal Typography */
+    *,
+    body,
+    button,
+    input,
+    select,
+    textarea,
+    .font-sans,
+    .font-display,
+    .font-mono {
+      font-family: Arial, Helvetica, system-ui, -apple-system, sans-serif !important;
+      font-style: normal !important;
+      letter-spacing: normal !important;
+    }
+    .uppercase,
+    .tracking-wider,
+    .tracking-widest,
+    .tracking-tight {
+      text-transform: none !important;
+      letter-spacing: normal !important;
+    }
+    .font-extrabold,
+    .font-black {
+      font-weight: 600 !important;
+    }
+
+    /* Selection Highlight: Pure Blue */
+    ::selection {
+      background-color: #2563EB !important;
+      color: #FFFFFF !important;
+    }
+    ::-moz-selection {
+      background-color: #2563EB !important;
+      color: #FFFFFF !important;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #E2E8F0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94A3B8;
+      border-radius: 9999px;
+    }
+
+    /* Silver / Platinum Main Theme */
+    :root {
+      --platinum-bg: #EAEFF5;
+      --platinum-card: #FFFFFF;
+      --platinum-card-elevated: #F1F5F9;
+      --platinum-border: #CBD5E1;
+      --platinum-text-main: #0F172A;
+      --platinum-text-muted: #475569;
+    }
+
+    body {
+      background-color: var(--platinum-bg);
+      color: var(--platinum-text-main);
+    }
+
+    #adminDashboardContainer .theme-card {
+      background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 60%, #F1F5F9 100%) !important;
+      background-color: #FFFFFF !important;
+      border-color: var(--platinum-border) !important;
+      box-shadow: 0 4px 20px -2px rgba(100, 116, 139, 0.12), 0 1px 3px rgba(100, 116, 139, 0.08) !important;
+      color: var(--platinum-text-main) !important;
+    }
+
+    #adminDashboardContainer .inner-panel {
+      background: #F1F5F9 !important;
+      border-color: var(--platinum-border) !important;
+      color: #0F172A !important;
+    }
+
+    #adminDashboardContainer h1,
+    #adminDashboardContainer h2,
+    #adminDashboardContainer h3,
+    #adminDashboardContainer h4,
+    #adminDashboardContainer h5,
+    #adminDashboardContainer h6 {
+      color: #0F172A !important;
+      font-weight: 600;
+    }
+
+    #adminDashboardContainer .text-white {
+      color: #0F172A !important;
+    }
+
+    /* Sidebar dark container and brand logo must preserve pure white */
+    #appSidebar,
+    #adminSidebar,
+    #appSidebar .text-white,
+    #adminSidebar .text-white,
+    #adminSidebar span.text-white,
+    .brand-amazon-white {
+      color: #FFFFFF !important;
+    }
+
+    #adminDashboardContainer .text-slate-400,
+    #adminDashboardContainer .text-slate-500 {
+      color: #475569 !important;
+    }
+
+    /* Buttons with solid backgrounds keep white text */
+    button.bg-blue-600,
+    button.bg-blue-600 *,
+    button.bg-emerald-600,
+    button.bg-emerald-600 *,
+    button.bg-rose-600,
+    button.bg-rose-600 *,
+    .btn-solid-white,
+    .btn-solid-white * {
+      color: #FFFFFF !important;
+    }
+
+    /* Custom Leaflet Markers */
+    .custom-van-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      border-radius: 9999px;
+      border: 2px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+    .custom-van-marker:hover {
+      transform: scale(1.2);
+      z-index: 9999 !important;
+    }
+
+    /* Route Polyline Dash Animation */
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -40;
+      }
+    }
+    .animated-route-line {
+      stroke-dasharray: 8, 8;
+      animation: dash 1.5s linear infinite;
+    }
+
+    /* 3D Satellite Perspective Container & Modes (matches aws.html) */
+    .map-3d-wrapper {
+      perspective: 1050px;
+      perspective-origin: 50% 80%;
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.75rem;
+    }
+    .map-3d-wrapper.mode-3d #adminFleetMap {
+      transform: rotateX(52deg) scale(1.18) translateY(-4%);
+      transform-origin: 50% 80%;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.65s ease;
+      box-shadow: 0 35px 65px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    }
+    .map-3d-wrapper.mode-2d #adminFleetMap {
+      transform: rotateX(0deg) scale(1) translateY(0);
+      transform-origin: 50% 80%;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.65s ease;
+    }
+    .map-3d-wrapper.mode-street #adminFleetMap {
+      transform: rotateX(72deg) scale(1.48) translateY(-18%);
+      transform-origin: 50% 90%;
+      transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.7s ease;
+      box-shadow: 0 45px 85px -10px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(6, 182, 212, 0.35);
+    }
+    .map-3d-wrapper.mode-street::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 140px;
+      background: linear-gradient(180deg, rgba(8, 15, 35, 0.98) 0%, rgba(14, 28, 64, 0.7) 45%, rgba(56, 189, 248, 0.15) 75%, transparent 100%);
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 1;
+    }
+    .map-3d-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 90px;
+      background: linear-gradient(180deg, rgba(5, 12, 28, 0.88) 0%, rgba(5, 12, 28, 0.45) 55%, transparent 100%);
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .map-3d-wrapper.mode-3d::after {
+      opacity: 1;
+    }
+
+    /* 3D Billboarding */
+    .map-3d-wrapper.mode-3d .custom-map-marker,
+    .map-3d-wrapper.mode-3d .van-bearing-marker,
+    .map-3d-wrapper.mode-3d .custom-hub-marker {
+      transform: rotateX(-52deg) translateZ(12px) !important;
+      transform-origin: bottom center !important;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.75));
+    }
+    .map-3d-wrapper.mode-3d .exact-live-user-marker {
+      transform: rotateX(-52deg) translateZ(18px) !important;
+      transform-origin: bottom center !important;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.85));
+    }
+    .map-3d-wrapper.mode-street .custom-map-marker,
+    .map-3d-wrapper.mode-street .van-bearing-marker,
+    .map-3d-wrapper.mode-street .custom-hub-marker,
+    .map-3d-wrapper.mode-street .exact-live-user-marker {
+      transform: rotateX(-72deg) translateZ(32px) scale(1.22) !important;
+      transform-origin: bottom center !important;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.95));
+    }
+    .map-3d-wrapper.mode-2d .custom-map-marker,
+    .map-3d-wrapper.mode-2d .van-bearing-marker,
+    .map-3d-wrapper.mode-2d .custom-hub-marker,
+    .map-3d-wrapper.mode-2d .exact-live-user-marker {
+      transform: rotateX(0deg) translateZ(0) !important;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    /* Radar Pulse Animation */
+    @keyframes locRadarPulse {
+      0% { transform: scale(0.6); opacity: 1; }
+      70% { transform: scale(2.2); opacity: 0.15; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+
+    /* 3D Mode Floating Indicator */
+    .mode-3d-indicator {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      z-index: 1000;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #38BDF8 !important;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      letter-spacing: 0.05em;
+    }
+    .mode-3d-indicator * {
+      color: #38BDF8 !important;
+    }
+
+    /* Glass HUD Panel on Map */
+    .glass-hud-panel {
+      background: rgba(15, 23, 42, 0.92) !important;
+      backdrop-filter: blur(12px) !important;
+      border: 1px solid rgba(56, 189, 248, 0.25) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+      color: #F8FAFC !important;
+    }
+    #adminDashboardContainer .glass-hud-panel .text-white {
+      color: #FFFFFF !important;
+    }
+    #adminDashboardContainer .glass-hud-panel .text-slate-200 {
+      color: #E2E8F0 !important;
+    }
+    #adminDashboardContainer .glass-hud-panel .text-slate-300 {
+      color: #CBD5E1 !important;
+    }
+    #adminDashboardContainer .glass-hud-panel .text-slate-400 {
+      color: #94A3B8 !important;
+    }
+    #adminDashboardContainer .glass-hud-panel .text-cyan-300 {
+      color: #67E8F9 !important;
+    }
+    #adminDashboardContainer .glass-hud-panel .text-cyan-400 {
+      color: #22D3EE !important;
+    }
+    #adminDashboardContainer .glass-hud-panel .text-emerald-400 {
+      color: #34D399 !important;
+    }
+
+    /* Street View Dock Styles */
+    #streetViewDock.street-view-dock-expanded {
+      position: fixed !important;
+      inset: 16px !important;
+      width: auto !important;
+      height: auto !important;
+      max-width: none !important;
+      max-height: none !important;
+      z-index: 99999 !important;
+    }
+    #streetViewDock.street-view-dock-expanded #streetViewFrameContainer {
+      height: calc(100vh - 120px) !important;
+    }
+
+    /* Marker styling */
+    .custom-map-marker,
+    .custom-map-marker *,
+    .van-bearing-marker,
+    .van-bearing-marker *,
+    .custom-hub-marker,
+    .custom-hub-marker * {
+      color: #FFFFFF !important;
+    }
+    .custom-map-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .van-bearing-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .exact-live-user-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Leaflet Popups */
+    .leaflet-popup-content-wrapper {
+      background: #FFFFFF !important;
+      color: #0F172A !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    }
+  </style>
+</head>
+
+<body class="bg-[#EAEFF5] text-[#0F172A] min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+
+  <!-- =========================================================================
+       ADMIN APP WRAPPER
+       ========================================================================= -->
+  <div id="adminDashboardContainer" class="flex h-screen w-screen overflow-hidden">
+
+    <!-- =======================================================================
+         PURE BLACK SIDEBAR NAVIGATION
+         ======================================================================= -->
+    <aside id="adminSidebar" class="w-64 md:w-68 bg-black border-r border-white/10 flex flex-col flex-shrink-0 transition-all duration-300 z-30 select-none">
+      
+      <!-- Brand Header -->
+      <div class="p-4 flex flex-col border-b border-white/10 bg-black">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2 overflow-hidden">
+            <img src="amazon_route_logo.png" alt="Amazon Route" class="h-11 w-auto max-w-[195px] object-contain drop-shadow-md select-none">
+          </div>
+          <span class="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 bg-blue-600/30 text-blue-400 border border-blue-500/40 rounded tracking-normal">ADMIN</span>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <div class="px-3 pb-2 text-[10px] font-bold text-slate-400">Fleet Operations</div>
+        
+        <button onclick="switchAdminTab('fleet-map')" id="nav-fleet-map" class="admin-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group bg-blue-600/15 text-blue-400 border border-blue-500/30">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="map" class="w-4 h-4 text-blue-400"></i>
+            <span>Fleet Live Map</span>
+          </div>
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+        </button>
+
+        <button onclick="switchAdminTab('drivers')" id="nav-drivers" class="admin-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all group">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="users" class="w-4 h-4 group-hover:text-blue-400"></i>
+            <span>Drivers & Vehicles</span>
+          </div>
+          <span id="badgeDriversCount" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-semibold">24 Vans</span>
+        </button>
+
+        <button onclick="switchAdminTab('shipments')" id="nav-shipments" class="admin-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all group">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="package" class="w-4 h-4 group-hover:text-blue-400"></i>
+            <span>Master Manifest</span>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">1,482</span>
+        </button>
+
+        <button onclick="switchAdminTab('onboarding')" id="nav-onboarding" class="admin-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all group">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="user-check" class="w-4 h-4 group-hover:text-amber-400"></i>
+            <span>Courier Onboarding</span>
+          </div>
+          <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">RC Verif</span>
+        </button>
+
+        <div class="pt-4 px-3 pb-2 text-[10px] font-bold text-slate-400">AI Intelligence & Logistics</div>
+
+        <button onclick="switchAdminTab('optimizer')" id="nav-optimizer" class="admin-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all group">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="cpu" class="w-4 h-4 group-hover:text-cyan-400"></i>
+            <span>AI Route TSP Engine</span>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold">Solve</span>
+        </button>
+
+        <button onclick="switchAdminTab('analytics')" id="nav-analytics" class="admin-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all group">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="bar-chart-3" class="w-4 h-4 group-hover:text-blue-400"></i>
+            <span>Fleet SLA Analytics</span>
+          </div>
+          <span class="text-xs text-slate-400">98.4%</span>
+        </button>
+
+        <button onclick="openAlexaModal()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all group border border-blue-500/30 bg-blue-600/10">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="mic" class="w-4 h-4 text-blue-400"></i>
+            <span>Alexa Admin Skill</span>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-600 text-white font-semibold">VOICE</span>
+        </button>
+      </nav>
+
+      <!-- Operations Hub Telemetry Widget -->
+      <div class="p-3 mx-3 mb-2 rounded-xl bg-[#111111] border border-white/10 text-xs space-y-1.5 text-slate-300">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-400">Dispatch Telemetry</span>
+          <span class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE
+          </span>
+        </div>
+        <div class="text-[11px] flex justify-between text-slate-400">
+          <span>Active Hubs:</span>
+          <span class="text-white font-medium">4 Terminals</span>
+        </div>
+        <div class="text-[11px] flex justify-between text-slate-400">
+          <span>Fleet Connected:</span>
+          <span class="text-emerald-400 font-medium">24 / 28 Vans</span>
+        </div>
+      </div>
+
+      <!-- Admin User Profile & Portal Switcher -->
+      <div class="p-3 border-t border-white/10 flex items-center justify-between bg-[#0A0A0A]">
+        <div class="flex items-center space-x-2.5 overflow-hidden">
+          <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+            AD
+          </div>
+          <div class="truncate">
+            <div class="font-medium text-xs text-white truncate">some@gmail.com</div>
+            <div class="text-[10px] text-slate-400 truncate">Fleet Operations Manager</div>
+          </div>
+        </div>
+        <button onclick="returnToDriverPortal()" class="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Switch to Driver Portal (aws.html)">
+          <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- =======================================================================
+         MAIN ADMIN CONTENT CONTAINER
+         ======================================================================= -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#EAEFF5]">
+      
+      <!-- Top Navigation Header -->
+      <header class="h-16 bg-white border-b border-slate-300 flex items-center justify-between px-4 md:px-6 z-20 flex-shrink-0 shadow-sm">
+        
+        <div class="flex items-center space-x-3">
+          <button onclick="toggleAdminSidebar()" class="p-2 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-300 md:hidden flex-shrink-0" title="Toggle Navigation Sidebar">
+            <i data-lucide="menu" class="w-4 h-4"></i>
+          </button>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="font-bold text-base md:text-lg text-slate-900">Amazon Route — Operations Admin Command Center</h1>
+              <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                System Operational
+              </span>
+            </div>
+            <p id="currentLiveDateAdmin" class="text-[11px] text-slate-500 font-medium"></p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          
+          <!-- Return to Driver Portal Link -->
+          <button onclick="returnToDriverPortal()" class="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-800 text-xs font-semibold flex items-center space-x-1.5 transition-colors shadow-sm" title="Return to Courier Driver Web Portal (aws.html)">
+            <i data-lucide="truck" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span class="hidden md:inline">Driver Portal (aws.html)</span>
+          </button>
+
+          <!-- Voice / Alexa Simulator Button -->
+          <button onclick="openAlexaModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center space-x-1.5 transition-colors shadow-sm btn-solid-white" title="Open Alexa Admin Voice Simulator">
+            <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+            <span>Alexa Admin</span>
+          </button>
+
+          <!-- Sign Out -->
+          <button onclick="handleAdminLogout()" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs flex items-center space-x-1.5 transition-colors shadow-sm btn-solid-white" title="Sign out to main login">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>Sign Out</span>
+          </button>
+
+        </div>
+      </header>
+
+      <!-- Scrollable Main Admin Content -->
+      <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+
+        <!-- ===================================================================
+             TAB 1: FLEET COMMAND & LIVE MAP
+             =================================================================== -->
+        <section id="tab-fleet-map" class="admin-tab-content space-y-6">
+          
+          <!-- 4 KPI Banners -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <div class="theme-card bg-white border border-slate-300 rounded-2xl p-5 shadow-card flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-slate-600">Active Fleet Vans</span>
+                <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <i data-lucide="truck" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="my-3 flex items-baseline justify-between">
+                <span id="kpiActiveVans" class="font-semibold text-2xl text-slate-900">24 / 28</span>
+                <span class="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">85.7% Online</span>
+              </div>
+              <p class="pt-2 border-t border-slate-200 text-xs text-slate-600">18 en route • 6 charging docks</p>
+            </div>
+
+            <div class="theme-card bg-white border border-slate-300 rounded-2xl p-5 shadow-card flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-slate-600">Total Packages Today</span>
+                <div class="w-9 h-9 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center">
+                  <i data-lucide="package" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="my-3 flex items-baseline justify-between">
+                <span id="kpiTotalPackages" class="font-semibold text-2xl text-slate-900">1,482</span>
+                <span class="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-300">1,120 Delivered</span>
+              </div>
+              <p class="pt-2 border-t border-slate-200 text-xs text-slate-600">362 active in delivery queue</p>
+            </div>
+
+            <div class="theme-card bg-white border border-slate-300 rounded-2xl p-5 shadow-card flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-slate-600">On-Time SLA Punctuality</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="my-3 flex items-baseline justify-between">
+                <span id="kpiPunctuality" class="font-semibold text-2xl text-slate-900">98.4%</span>
+                <span class="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">+3.4% Target</span>
+              </div>
+              <p class="pt-2 border-t border-slate-200 text-xs text-slate-600">Zero catastrophic window breaches</p>
+            </div>
+
+            <div class="theme-card bg-white border border-slate-300 rounded-2xl p-5 shadow-card flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-slate-600">Fuel & Distance Saved</span>
+                <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                  <i data-lucide="zap" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="my-3 flex items-baseline justify-between">
+                <span id="kpiDistanceSaved" class="font-semibold text-2xl text-slate-900">418.5 km</span>
+                <span class="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full border border-indigo-300">142.6 L Gas</span>
+              </div>
+              <p class="pt-2 border-t border-slate-200 text-xs text-slate-600">Neural TSP Route Optimization</p>
+            </div>
+
+          </div>
+
+          <!-- Map Controls Bar (matches aws.html style) -->
+          <div class="theme-card bg-white border border-slate-300 rounded-2xl p-4 shadow-card">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <h3 class="font-display font-extrabold text-base md:text-lg text-slate-900">Interactive Fleet Route & Operations Map</h3>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 border border-cyan-300 font-bold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-600 animate-pulse"></span> GPS ACTIVE
+                  </span>
+                </div>
+                <p id="adminMapSubtitle" class="text-xs text-slate-600 mt-0.5">Warehouse WH-04 ➔ Active Delivery Vans & 12 Route Stops across Metro Corridors</p>
+              </div>
+
+              <!-- Controls: Live GPS, Optimize, Recalculate, 2D/3D, Center, Filter -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="triggerAdminAiRouteOptimization()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white btn-solid-white shadow-md flex items-center space-x-1.5 transition-all">
+                  <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                  <span>Optimize Route</span>
+                </button>
+
+                <button onclick="recalculateAdminRouteTraffic()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-medium text-slate-800 flex items-center space-x-1.5 transition-all">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-cyan-600"></i>
+                  <span>Recalculate Traffic</span>
+                </button>
+
+                <button onclick="enableAdminLiveGpsRoute(true)" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white btn-solid-white shadow-sm flex items-center space-x-1.5 transition-all" title="Center on your exact location without GPS prompts">
+                  <i data-lucide="navigation" class="w-3.5 h-3.5"></i>
+                  <span id="adminMapGpsBtnText">📍 Exact Location</span>
+                </button>
+
+                <!-- 2D / 3D Satellite / 3D Street View Perspective Toggle -->
+                <div class="inline-flex rounded-xl bg-slate-100 border border-slate-300 p-0.5" role="group">
+                  <button id="adminMap2dBtn" onclick="setAdminMapDimension('2d')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-sm flex items-center gap-1 btn-solid-white" title="2D Top-Down Satellite View">
+                    <span>2D</span>
+                  </button>
+                  <button id="adminMap3dBtn" onclick="setAdminMapDimension('3d')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-700 hover:text-slate-900 flex items-center gap-1" title="3D Perspective Satellite View">
+                    <span>3D Satellite</span>
+                  </button>
+                  <button id="adminMapStreetBtn" onclick="setAdminMapDimension('street')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-700 hover:text-slate-900 flex items-center gap-1" title="3D Ground-Level Street View & 360° Cam">
+                    <i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-600"></i>
+                    <span>3D Street View</span>
+                  </button>
+                </div>
+
+                <button onclick="centerAdminFleetMap()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-medium text-slate-800 flex items-center space-x-1.5 transition-all">
+                  <i data-lucide="crosshair" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span>Center Route</span>
+                </button>
+
+                <button id="adminToggleCompletedBtn" onclick="toggleAdminMapCompletedStops()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-medium text-slate-800 flex items-center space-x-1.5 transition-all">
+                  <i data-lucide="eye" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <span id="adminMapCompletedToggleText">Show Remaining Only</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Map & Interactive Stops Drawer Layout (8 cols + 4 cols) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[600px] min-h-[520px]">
+            <!-- Leaflet Interactive Map (8 cols) -->
+            <div class="lg:col-span-8 relative rounded-2xl overflow-hidden border border-slate-300 shadow-card bg-[#11182B]">
+              <div id="adminFleetMapWrapper" class="map-3d-wrapper mode-2d w-full h-full z-0 overflow-hidden relative">
+                <div id="adminFleetMap" class="w-full h-full z-0"></div>
+                <div id="adminMap3dBadge" class="mode-3d-indicator hidden">
+                  <i data-lucide="box" class="w-3 h-3 text-cyan-400"></i>
+                  <span>3D SATELLITE</span>
+                </div>
+              </div>
+
+              <!-- Floating Live Route HUD Panel -->
+              <div class="absolute top-4 left-4 z-10 glass-hud-panel rounded-xl p-3 max-w-xs text-xs space-y-2 pointer-events-auto">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> Next Scheduled Stop
+                  </span>
+                  <span class="font-mono text-[10px] text-slate-400" id="adminHudStopNumber">Stop #5</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm" id="adminHudNextRecipient">Sophia Patel</h4>
+                  <p class="text-[11px] text-slate-300 truncate" id="adminHudNextAddress">1042 Birchwood Blvd, Sector 4</p>
+                </div>
+                <div class="flex items-center justify-between text-[11px] pt-1 border-t border-white/10 font-mono">
+                  <span class="text-cyan-400" id="adminHudEta">ETA: 11:20 AM</span>
+                  <span class="text-slate-400" id="adminHudDistance">2.4 km away</span>
+                </div>
+                <div class="flex items-center gap-1.5 pt-0.5">
+                  <button onclick="startAdminTurnByTurnSim()" class="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 font-semibold text-white text-xs flex items-center justify-center space-x-1.5 shadow-sm transition-all btn-solid-white">
+                    <i data-lucide="navigation" class="w-3.5 h-3.5"></i>
+                    <span>Turn-by-Turn GPS</span>
+                  </button>
+                  <button onclick="syncStreetViewToVan()" class="px-2.5 py-1.5 rounded-lg bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 border border-cyan-500/40 text-xs font-semibold flex items-center space-x-1 transition-all" title="Live Driver 3D Street Cam">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Map Legend Overlay -->
+              <div class="absolute bottom-4 left-4 z-10 glass-hud-panel rounded-xl px-3 py-2 text-[10px] flex items-center space-x-3 text-slate-300 shadow-card">
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-white"></span>
+                  <span class="text-slate-200">Warehouse Hub</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                  <span class="text-slate-200">Delivered</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-white"></span>
+                  <span class="text-slate-200">Active Stop</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>
+                  <span class="text-slate-200">Delay Risk</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Collapsible Stops & Fleet Drawer (4 cols) -->
+            <div class="lg:col-span-4 flex flex-col theme-card bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-card">
+              <div class="p-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center gap-1.5">
+                  <button id="drawerTabStopsBtn" onclick="switchDrawerTab('stops')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white btn-solid-white shadow-sm transition-all">
+                    Route Stops
+                  </button>
+                  <button id="drawerTabVansBtn" onclick="switchDrawerTab('vans')" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all">
+                    Fleet Vans
+                  </button>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-semibold" id="adminMapStopCounter">12 Stops</span>
+              </div>
+
+              <!-- List with Click-to-Center -->
+              <div id="adminMapDrawerList" class="flex-1 overflow-y-auto divide-y divide-slate-100 p-2 space-y-1">
+                <!-- Dynamically populated stops or fleet vans -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Fleet Map Summary Footer -->
+          <div class="p-3 bg-white border border-slate-300 rounded-xl flex items-center justify-between flex-wrap gap-2 text-xs text-slate-700 shadow-sm">
+            <div class="flex items-center space-x-4">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>Warehouse Hubs (4)</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>Vans En Route (<span id="adminMapEnRouteCount">4</span>)</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>Completed Shift (<span id="adminMapCompletedCount">1</span>)</span>
+            </div>
+            <div class="flex items-center gap-3 font-medium text-slate-600">
+              <span id="adminMapDistanceLabel" class="font-mono text-blue-700 font-bold">🛣️ Road: 38.4 km</span>
+              <span>Active Telemetry: High Frequency 100ms GPS updates</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ===================================================================
+             TAB 2: DRIVERS & VEHICLES ROSTER
+             =================================================================== -->
+        <section id="tab-drivers" class="admin-tab-content space-y-4 hidden">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="font-bold text-lg text-slate-900">Drivers & Delivery Vehicle Fleet Roster</h2>
+              <p class="text-xs text-slate-600">Courier profiles, registered vehicle models, verified RC Books, and real-time battery/fuel telemetry</p>
+            </div>
+            <button onclick="openNewDriverModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center space-x-1.5 btn-solid-white">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+              <span>Assign New Driver</span>
+            </button>
+          </div>
+
+          <!-- Drivers Roster Table -->
+          <div class="theme-card bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-card">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-800">
+                <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                  <tr>
+                    <th class="p-3.5">Driver & ID</th>
+                    <th class="p-3.5">Vehicle & Type</th>
+                    <th class="p-3.5">RC Book Status</th>
+                    <th class="p-3.5">Assigned Sector</th>
+                    <th class="p-3.5">Packages Assigned</th>
+                    <th class="p-3.5">Battery / Range</th>
+                    <th class="p-3.5">Live Status</th>
+                    <th class="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminDriversTableBody" class="divide-y divide-slate-200 font-sans">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ===================================================================
+             TAB 3: MASTER MANIFEST DISPATCH
+             =================================================================== -->
+        <section id="tab-shipments" class="admin-tab-content space-y-4 hidden">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="font-bold text-lg text-slate-900">Master Logistics Shipments Dispatch</h2>
+              <p class="text-xs text-slate-600">Enterprise cross-dock package tracking, dynamic route assignment, and electronic proof-of-delivery</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="exportAdminCsv()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-semibold text-slate-800 flex items-center space-x-1.5">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Export Manifest (.CSV)</span>
+              </button>
+              <button onclick="openNewShipmentModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center space-x-1.5 btn-solid-white">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>Create Shipment</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Bar -->
+          <div class="theme-card bg-white border border-slate-300 rounded-2xl p-4 shadow-card">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div class="sm:col-span-2 relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="adminShipmentSearch" oninput="applyAdminShipmentFilter()" placeholder="Search by tracking ID, recipient, street address..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+              </div>
+              <div>
+                <select id="adminStatusFilter" onchange="applyAdminShipmentFilter()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+                  <option value="ALL">All Statuses</option>
+                  <option value="ASSIGNED">Assigned</option>
+                  <option value="IN_TRANSIT">In Transit</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="DELAYED">Delayed</option>
+                </select>
+              </div>
+              <div>
+                <select id="adminDriverFilter" onchange="applyAdminShipmentFilter()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+                  <option value="ALL">All Drivers</option>
+                  <option value="Alex Mercer">Alex Mercer (#VAN-402)</option>
+                  <option value="Sarah Connor">Sarah Connor (#VAN-405)</option>
+                  <option value="Marcus Vance">Marcus Vance (#VAN-408)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Master Shipments Table -->
+          <div class="theme-card bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-card">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-800">
+                <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                  <tr>
+                    <th class="p-3.5">Shipment ID</th>
+                    <th class="p-3.5">Recipient & Destination</th>
+                    <th class="p-3.5">Assigned Courier</th>
+                    <th class="p-3.5">Window</th>
+                    <th class="p-3.5">Priority</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5 text-right">Quick Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminShipmentsTableBody" class="divide-y divide-slate-200 font-sans">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ===================================================================
+             TAB 4: COURIER ONBOARDING & RC BOOK VERIFICATION
+             =================================================================== -->
+        <section id="tab-onboarding" class="admin-tab-content space-y-4 hidden">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="font-bold text-lg text-slate-900">Courier Partner Registrations & RC Book Verification</h2>
+              <p class="text-xs text-slate-600">Review new delivery drivers registered via the public portal, verify uploaded vehicle documents (RC Book), and grant fleet console access</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="onboardingPendingBadge" class="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-semibold border border-amber-300">
+                2 Pending Review
+              </span>
+            </div>
+          </div>
+
+          <div id="onboardingQueueContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamically injected onboarding cards -->
+          </div>
+
+        </section>
+
+        <!-- ===================================================================
+             TAB 5: AI ROUTE TSP ENGINE
+             =================================================================== -->
+        <section id="tab-optimizer" class="admin-tab-content space-y-6 hidden">
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-bold text-lg text-slate-900">Enterprise AI Route TSP Optimization Engine</h2>
+              <p class="text-xs text-slate-600">Multi-vehicle Traveling Salesperson heuristic solver incorporating real-time traffic congestion vectors</p>
+            </div>
+            <button onclick="runGlobalTspOptimizer()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center space-x-1.5 btn-solid-white shadow-md">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+              <span>Execute Fleet TSP Optimization</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-2 theme-card bg-white border border-slate-300 rounded-2xl p-5 shadow-card space-y-4">
+              <h3 class="font-bold text-sm text-slate-900">Fleet Route Efficiency Metric Comparison</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl bg-slate-100 border border-slate-300 space-y-1">
+                  <span class="text-xs text-slate-500 font-medium">Un-optimized Trajectory</span>
+                  <div class="text-2xl font-bold text-slate-700">584.2 km</div>
+                  <p class="text-[11px] text-slate-500">Standard FIFO sequence • 42 mins average stop delay</p>
+                </div>
+                <div class="p-4 rounded-xl bg-blue-50 border border-blue-200 space-y-1">
+                  <span class="text-xs text-blue-700 font-medium">Amazon Route Optimized Trajectory</span>
+                  <div class="text-2xl font-bold text-blue-600">412.0 km (-29.5%)</div>
+                  <p class="text-[11px] text-blue-700">Nearest-Neighbor + SLA priority window weighting</p>
+                </div>
+              </div>
+
+              <!-- Optimization Progress Bar (Simulated) -->
+              <div id="optimizerProgressPanel" class="hidden p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span id="optimizerStatusText" class="font-semibold text-slate-800">Calculating TSP graph matrices...</span>
+                  <span id="optimizerPercent" class="font-bold text-blue-600">65%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div id="optimizerProgressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 65%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottleneck Alerts -->
+            <div class="theme-card bg-white border border-slate-300 rounded-2xl p-5 shadow-card space-y-3">
+              <h3 class="font-bold text-sm text-slate-900 flex items-center justify-between">
+                <span>Active Traffic Bottlenecks</span>
+                <span id="bottleneckCountBadge" class="text-xs text-rose-600 font-semibold bg-rose-100 px-2 py-0.5 rounded-full">2 Alerts</span>
+              </h3>
+              <ul id="bottleneckList" class="space-y-2.5 text-xs text-slate-700">
+                <li id="bottleneck-1" class="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
+                  <div class="flex items-center justify-between">
+                    <div class="font-semibold text-slate-900">Harbor Blvd Corridor (+18m)</div>
+                    <button onclick="resolveBottleneck(1, 'VAN-402')" class="px-2 py-0.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-semibold btn-solid-white shadow-sm">Reroute</button>
+                  </div>
+                  <p class="text-slate-600 mt-0.5">Affecting Van #VAN-402 (Alex Mercer). Bypass recommended via West Ave.</p>
+                </li>
+                <li id="bottleneck-2" class="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
+                  <div class="flex items-center justify-between">
+                    <div class="font-semibold text-slate-900">Midtown Tunnel Lane Closure (+25m)</div>
+                    <button onclick="resolveBottleneck(2, 'VAN-405')" class="px-2 py-0.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-semibold btn-solid-white shadow-sm">Reroute</button>
+                  </div>
+                  <p class="text-slate-600 mt-0.5">Affecting Van #VAN-405 (Sarah Connor). Divert to Upper Bridge.</p>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ===================================================================
+             TAB 6: FLEET SLA ANALYTICS
+             =================================================================== -->
+        <section id="tab-analytics" class="admin-tab-content space-y-6 hidden">
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-bold text-lg text-slate-900">Fleet Operations Analytics & Punctuality Trends</h2>
+              <p class="text-xs text-slate-600">Hourly delivery throughput, SLA compliance distribution, and carbon emission savings</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <div class="theme-card bg-white border border-slate-300 rounded-2xl p-5 shadow-card space-y-3">
+              <h3 class="font-bold text-sm text-slate-900">Hourly Deliveries Handover Volume</h3>
+              <div class="h-64 relative flex items-center justify-center">
+                <canvas id="adminHourlyChart"></canvas>
+              </div>
+            </div>
+
+            <div class="theme-card bg-white border border-slate-300 rounded-2xl p-5 shadow-card space-y-3">
+              <h3 class="font-bold text-sm text-slate-900">SLA Punctuality Compliance by Sector</h3>
+              <div class="h-64 relative flex items-center justify-center">
+                <canvas id="adminSectorChart"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODALS: RC BOOK INSPECTION, NEW DRIVER, NEW SHIPMENT, ALEXA SIMULATOR
+       ========================================================================= -->
+
+  <!-- 1. RC BOOK DOCUMENT INSPECTION MODAL -->
+  <div id="rcBookModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-white border border-slate-300 rounded-2xl w-full max-w-xl p-6 space-y-4 shadow-2xl text-slate-900">
+      
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900" id="rcModalDriverName">Driver RC Book Document</h3>
+            <p class="text-xs text-slate-500" id="rcModalPlate">Registration & Vehicle Verification</p>
+          </div>
+        </div>
+        <button onclick="closeRcBookModal()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- RC Book Simulated Photo Card -->
+      <div class="rounded-xl border border-slate-300 overflow-hidden bg-slate-50 p-4 space-y-3">
+        <div class="flex items-center justify-between text-xs text-slate-600 border-b border-slate-200 pb-2">
+          <span class="font-bold text-slate-800">GOVERNMENT MOTOR VEHICLE REGISTRATION (RC BOOK)</span>
+          <span class="text-emerald-700 font-semibold bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">✓ VERIFIED</span>
+        </div>
+
+        <!-- Document Preview Canvas / Graphic -->
+        <div class="h-44 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex flex-col justify-between p-3 border border-slate-300 shadow-inner">
+          <div class="flex justify-between items-start text-[11px] font-mono text-slate-800">
+            <div>
+              <div class="font-bold text-slate-900">MINISTRY OF ROAD TRANSPORT & HIGHWAYS</div>
+              <div>CERTIFICATE OF REGISTRATION FORM 23</div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold text-blue-900" id="rcDocRegNo">DL-01-AB-4021</div>
+              <div>CLASS: LIGHT MOTOR VEHICLE (COMMERCIAL)</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[10px] font-mono text-slate-800 bg-white/70 p-2 rounded backdrop-blur-sm">
+            <div>Owner: <span class="font-bold text-slate-900" id="rcDocOwner">Alex Mercer</span></div>
+            <div>Vehicle: <span class="font-bold text-slate-900" id="rcDocModel">Rivian EDV-700 (Electric)</span></div>
+            <div>Chassis: <span>4JGDA5EB3LA892104</span></div>
+            <div>Fuel Type: <span class="text-emerald-700 font-bold">100% ELECTRIC (EV)</span></div>
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-600 leading-relaxed">
+          This document has been verified against national fleet transport registry databases. Commercial delivery license active.
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeRcBookModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold text-xs text-slate-800">
+          Close Preview
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 2. ALEXA ADMIN VOICE SIMULATOR MODAL -->
+  <div id="alexaModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-white border border-slate-300 rounded-2xl w-full max-w-xl p-6 space-y-4 shadow-2xl text-slate-900">
+      
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+            <i data-lucide="mic" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">Amazon Alexa Admin Voice Operations</h3>
+            <p class="text-xs text-slate-600">Voice-controlled fleet dispatch & telemetry inspection</p>
+          </div>
+        </div>
+        <button onclick="closeAlexaModal()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-slate-800 space-y-2">
+        <div class="font-semibold text-blue-900">Preset Voice Intents:</div>
+        <div class="grid grid-cols-1 gap-2 pt-1">
+          <button onclick="testAdminAlexaUtterance('Alexa, ask Amazon Route for fleet status summary')" class="text-left p-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-100 font-medium text-xs">
+            🎙️ "Alexa, ask Amazon Route for fleet status summary"
+          </button>
+          <button onclick="testAdminAlexaUtterance('Alexa, ask Amazon Route to optimize all delivery routes')" class="text-left p-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-100 font-medium text-xs">
+            ⚡ "Alexa, ask Amazon Route to optimize all delivery routes"
+          </button>
+          <button onclick="testAdminAlexaUtterance('Alexa, ask Amazon Route which vans are delayed')" class="text-left p-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-100 font-medium text-xs">
+            ⚠️ "Alexa, ask Amazon Route which vans are delayed"
+          </button>
+        </div>
+
+        <div class="pt-2 border-t border-blue-200 space-y-1.5">
+          <label class="block font-semibold text-blue-900 text-[11px]">Custom Voice or Text Utterance:</label>
+          <div class="flex gap-2">
+            <input type="text" id="alexaCustomInput" placeholder="e.g. How many packages delivered? or Status of Alex Mercer" class="flex-1 bg-white border border-blue-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600" onkeydown="if(event.key==='Enter') executeCustomAlexa()">
+            <button onclick="executeCustomAlexa()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs btn-solid-white shadow-sm flex items-center space-x-1">
+              <i data-lucide="send" class="w-3 h-3"></i>
+              <span>Ask</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-100 rounded-xl space-y-1 text-xs">
+        <div class="font-bold text-slate-700">Alexa Spoken Output:</div>
+        <p id="alexaAdminSpokenText" class="text-slate-800 italic leading-relaxed">
+          "Hello Admin! Fleet has 24 active vans, 1,482 total packages with 98.4% on-time SLA compliance."
+        </p>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-1">
+        <button onclick="closeAlexaModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold text-xs text-white btn-solid-white">
+          Done
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 3. ASSIGN NEW DRIVER MODAL -->
+  <div id="newDriverModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-white border border-slate-300 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl text-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <i data-lucide="user-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">Assign New Fleet Driver</h3>
+            <p class="text-xs text-slate-500">Register courier to distribution terminal & vehicle</p>
+          </div>
+        </div>
+        <button onclick="closeNewDriverModal()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="newDriverForm" onsubmit="submitNewDriver(event)" class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+            <input type="text" id="newDriverName" required placeholder="e.g. Liam Nelson" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+            <input type="tel" id="newDriverPhone" required placeholder="+1 (555) 789-0123" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Vehicle Model</label>
+            <select id="newDriverVehicle" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+              <option value="Rivian EDV-700 (EV)">Rivian EDV-700 (EV)</option>
+              <option value="Ford E-Transit 350">Ford E-Transit 350</option>
+              <option value="BrightDrop Zevo 600">BrightDrop Zevo 600</option>
+              <option value="Mercedes-Benz eVito">Mercedes-Benz eVito</option>
+              <option value="Freightliner Custom EV">Freightliner Custom EV</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">License Plate</label>
+            <input type="text" id="newDriverPlate" required placeholder="e.g. NY-94-LN-5520" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Assigned Hub</label>
+            <select id="newDriverHub" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+              <option value="North Terminal WH-04">North Terminal WH-04</option>
+              <option value="Midtown Central WH-01">Midtown Central WH-01</option>
+              <option value="Downtown Port WH-09">Downtown Port WH-09</option>
+              <option value="Queens Center WH-12">Queens Center WH-12</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Initial Package Count</label>
+            <input type="number" id="newDriverPackages" min="1" max="50" value="14" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeNewDriverModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold text-xs text-slate-800">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold text-xs text-white btn-solid-white shadow-md">
+            Assign & Register Driver
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. CREATE NEW SHIPMENT MODAL -->
+  <div id="newShipmentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-white border border-slate-300 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl text-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <i data-lucide="package" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">Create New Route Shipment</h3>
+            <p class="text-xs text-slate-500">Dispatch package into master manifest & assign van</p>
+          </div>
+        </div>
+        <button onclick="closeNewShipmentModal()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="newShipmentForm" onsubmit="submitNewShipment(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Recipient Name</label>
+          <input type="text" id="newShipmentRecipient" required placeholder="e.g. Arthur Pendelton" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Destination Address</label>
+          <input type="text" id="newShipmentAddress" required placeholder="e.g. 75 Rockefeller Plaza, Floor 18, New York, NY" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Assign Courier / Van</label>
+            <select id="newShipmentCourier" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Delivery Time Window</label>
+            <input type="text" id="newShipmentWindow" value="02:00 PM - 03:30 PM" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">SLA Priority</label>
+            <select id="newShipmentPriority" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+              <option value="STANDARD">STANDARD</option>
+              <option value="HIGH">HIGH</option>
+              <option value="URGENT">URGENT</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Initial Status</label>
+            <select id="newShipmentStatus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600">
+              <option value="ASSIGNED">ASSIGNED</option>
+              <option value="IN_TRANSIT">IN_TRANSIT</option>
+              <option value="DELIVERED">DELIVERED</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeNewShipmentModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold text-xs text-slate-800">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold text-xs text-white btn-solid-white shadow-md">
+            Create & Dispatch
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3D Street View Dock (Ground-Level 360° Panorama & Driver Cam) -->
+  <div id="streetViewDock" class="hidden fixed bottom-6 right-6 z-50 w-88 sm:w-96 rounded-2xl overflow-hidden border border-cyan-400/50 bg-[#0B1222]/95 shadow-2xl backdrop-blur-xl transition-all duration-300 flex flex-col pointer-events-auto">
+    <!-- Dock Header -->
+    <div class="px-3.5 py-2.5 bg-gradient-to-r from-cyan-950/90 via-slate-900 to-slate-950 border-b border-cyan-500/20 flex items-center justify-between text-xs text-white">
+      <div class="flex items-center gap-2 font-bold min-w-0 pr-2">
+        <span class="relative flex h-2.5 w-2.5 shrink-0">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+        </span>
+        <i data-lucide="eye" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+        <span id="streetViewDockTitle" class="truncate text-cyan-200">3D Street View</span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="toggleStreetViewExpand()" class="p-1 hover:bg-white/10 rounded-lg text-slate-300 hover:text-white transition-colors" title="Toggle Fullscreen / Docked View">
+          <i id="streetViewExpandIcon" data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+        </button>
+        <button onclick="openExternalStreetView()" class="p-1 hover:bg-white/10 rounded-lg text-slate-300 hover:text-white transition-colors" title="Open in Google Street View / 3D Earth">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </button>
+        <button onclick="closeStreetViewDock()" class="p-1 hover:bg-red-500/20 text-slate-300 hover:text-red-400 rounded-lg transition-colors" title="Close Street View Dock">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+    <!-- 360 View Frame Container -->
+    <div id="streetViewFrameContainer" class="relative w-full h-56 sm:h-64 bg-slate-950 transition-all duration-300">
+      <iframe id="streetViewIframe" class="w-full h-full border-0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div id="streetViewLoading" class="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center text-xs text-slate-400 gap-2">
+        <div class="w-7 h-7 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-cyan-300 font-medium">Loading 3D Street View Panorama...</span>
+      </div>
+    </div>
+    <!-- Dock Footer -->
+    <div class="px-3.5 py-2 bg-slate-900/90 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
+      <span id="streetViewCoordsLabel" class="font-mono text-cyan-400">11.0055, 76.9665</span>
+      <div class="flex items-center gap-2">
+        <button onclick="syncStreetViewToVan()" class="px-2 py-0.5 rounded bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 border border-cyan-500/40 font-semibold flex items-center gap-1 transition-all">
+          <i data-lucide="navigation" class="w-3 h-3"></i> Sync Van
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stop / Package Details Modal -->
+  <div id="packageDetailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-white border border-slate-300 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl text-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">📦</span>
+          <div>
+            <h3 class="font-bold text-base text-slate-900" id="pkgModalRecipient">Delivery Stop Details</h3>
+            <span class="text-xs font-mono text-blue-700 font-semibold" id="pkgModalId">NX-9025</span>
+          </div>
+        </div>
+        <button onclick="closePackageDetailModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-slate-500 block mb-0.5">Delivery Address</span>
+          <span class="font-semibold text-slate-900 text-sm" id="pkgModalAddress">1042 Birchwood Blvd</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-slate-500 block mb-0.5">Time Window</span>
+            <span class="font-semibold text-slate-800" id="pkgModalWindow">11:00 AM - 12:30 PM</span>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-slate-500 block mb-0.5">SLA Priority</span>
+            <span class="font-semibold text-slate-800" id="pkgModalPriority">HIGH</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-slate-500 block mb-0.5">Assigned Courier</span>
+            <span class="font-semibold text-slate-800" id="pkgModalCourier">Alex Mercer (#VAN-402)</span>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-slate-500 block mb-0.5">Current Status</span>
+            <span class="font-semibold text-emerald-600" id="pkgModalStatus">IN_TRANSIT</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+        <button id="pkgModalStreetViewBtn" onclick="" class="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold text-xs text-white btn-solid-white flex items-center space-x-1.5 shadow-md">
+          <i data-lucide="eye" class="w-4 h-4"></i>
+          <span>Launch 3D Street View</span>
+        </button>
+        <button onclick="closePackageDetailModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold text-xs text-slate-800">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- =========================================================================
+       JAVASCRIPT LOGIC
+       ========================================================================= -->
+  <script>
+    /* =======================================================================
+       1. DATA STORE: FLEET VANS, DRIVERS, HUBS, PACKAGES
+       ======================================================================= */
+    const ADMIN_HUBS = [
+      { id: 'WH-04', name: 'North Terminal Hub WH-04', lat: 40.7580, lng: -73.9855, vans: 8 },
+      { id: 'WH-01', name: 'Midtown Central Hub WH-01', lat: 40.7505, lng: -73.9934, vans: 7 },
+      { id: 'WH-09', name: 'Downtown Port Terminal WH-09', lat: 40.7128, lng: -74.0060, vans: 5 },
+      { id: 'WH-12', name: 'Queens Logistics Center WH-12', lat: 40.7498, lng: -73.9380, vans: 4 }
+    ];
+
+    const ADMIN_DRIVERS = [
+      {
+        id: 'DRV-101',
+        name: 'Alex Mercer',
+        vanId: 'VAN-402',
+        vehicleModel: 'Rivian EDV-700 (EV)',
+        plate: 'DL-01-AB-4021',
+        hub: 'North Terminal WH-04',
+        packagesAssigned: 12,
+        packagesDelivered: 4,
+        batteryPct: 78,
+        status: 'EN_ROUTE',
+        lat: 40.7614,
+        lng: -73.9776,
+        rcVerified: true,
+        phone: '+1 (555) 234-5678'
+      },
+      {
+        id: 'DRV-102',
+        name: 'Sarah Connor',
+        vanId: 'VAN-405',
+        vehicleModel: 'Ford E-Transit 350',
+        plate: 'NY-88-CT-9912',
+        hub: 'Midtown Central WH-01',
+        packagesAssigned: 16,
+        packagesDelivered: 11,
+        batteryPct: 62,
+        status: 'EN_ROUTE',
+        lat: 40.7535,
+        lng: -73.9820,
+        rcVerified: true,
+        phone: '+1 (555) 892-1200'
+      },
+      {
+        id: 'DRV-103',
+        name: 'Marcus Vance',
+        vanId: 'VAN-408',
+        vehicleModel: 'Mercedes-Benz eVito',
+        plate: 'CA-44-MV-1049',
+        hub: 'Downtown Port WH-09',
+        packagesAssigned: 14,
+        packagesDelivered: 14,
+        batteryPct: 91,
+        status: 'COMPLETED',
+        lat: 40.7180,
+        lng: -74.0020,
+        rcVerified: true,
+        phone: '+1 (555) 431-8844'
+      },
+      {
+        id: 'DRV-104',
+        name: 'Elena Rostova',
+        vanId: 'VAN-412',
+        vehicleModel: 'Rivian EDV-500 (EV)',
+        plate: 'NJ-92-ER-3391',
+        hub: 'Queens Center WH-12',
+        packagesAssigned: 15,
+        packagesDelivered: 8,
+        batteryPct: 54,
+        status: 'EN_ROUTE',
+        lat: 40.7420,
+        lng: -73.9450,
+        rcVerified: true,
+        phone: '+1 (555) 671-9011'
+      },
+      {
+        id: 'DRV-105',
+        name: 'David Kim',
+        vanId: 'VAN-415',
+        vehicleModel: 'BrightDrop Zevo 600',
+        plate: 'TX-10-DK-7721',
+        hub: 'North Terminal WH-04',
+        packagesAssigned: 18,
+        packagesDelivered: 12,
+        batteryPct: 45,
+        status: 'EN_ROUTE',
+        lat: 40.7650,
+        lng: -73.9680,
+        rcVerified: true,
+        phone: '+1 (555) 341-9982'
+      }
+    ];
+
+    const ADMIN_ONBOARDING_QUEUE = [
+      {
+        id: 'APP-9921',
+        name: 'Kavita Patel',
+        country: 'India',
+        flagIso: 'in',
+        phone: '+91 98765 43210',
+        vehicle: 'Commercial Two-wheeler EV',
+        serviceArea: 'North Metro Sector',
+        rcFileName: 'patel_rc_book_kavita.jpg',
+        submittedAt: 'Today, 08:30 AM',
+        status: 'PENDING'
+      },
+      {
+        id: 'APP-9922',
+        name: 'Carlos Mendez',
+        country: 'Mexico',
+        flagIso: 'mx',
+        phone: '+52 55 1234 5678',
+        vehicle: 'Cargo Van',
+        serviceArea: 'Downtown Terminal',
+        rcFileName: 'mendez_van_registration.pdf',
+        submittedAt: 'Today, 09:15 AM',
+        status: 'PENDING'
+      },
+      {
+        id: 'APP-9923',
+        name: 'Hanna Bergstrom',
+        country: 'Sweden',
+        flagIso: 'se',
+        phone: '+46 8 123 4567',
+        vehicle: 'Three-wheeler Electric',
+        serviceArea: 'Suburban Corridor',
+        rcFileName: 'bergstrom_rc_card.png',
+        submittedAt: 'Today, 10:05 AM',
+        status: 'PENDING'
+      }
+    ];
+
+    /* =======================================================================
+       2. TAB NAVIGATION
+       ======================================================================= */
+    function switchAdminTab(tabId) {
+      document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.admin-nav-item').forEach(btn => {
+        btn.className = 'admin-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all group';
+      });
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.className = 'admin-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group bg-blue-600/15 text-blue-400 border border-blue-500/30';
+      }
+
+      if (tabId === 'fleet-map') {
+        setTimeout(initAdminFleetMap, 150);
+      } else if (tabId === 'analytics') {
+        setTimeout(initAdminCharts, 150);
+      }
+      playBeep(450, 0.04);
+    }
+
+    /* =======================================================================
+       3. INTERACTIVE FLEET LEAFLET MAP & SATELLITE 3D PERSPECTIVE ENGINE
+       (Matching main website aws.html with Esri satellite, OSRM road snapping,
+        road-locked animated vans, turn-by-turn HUD, and 3D Street View dock)
+       ======================================================================= */
+    let ADMIN_DELIVERIES = [
+      { id: 'NX-9021', recipient: 'Jane Doe', phone: '+1 (555) 234-5678', address: '742 Evergreen Terrace, Springfield Sector 4', lat: 40.7614, lng: -73.9776, window: '09:00 AM - 10:30 AM', priority: 'STANDARD', status: 'DELIVERED', courier: 'Alex Mercer', weight: '2.4 kg', stopOrder: 1, risk: 'LOW' },
+      { id: 'NX-9022', recipient: 'David Sterling', phone: '+1 (555) 876-5432', address: '120 Broadway, Financial District', lat: 40.7645, lng: -73.9730, window: '09:30 AM - 11:00 AM', priority: 'HIGH', status: 'DELIVERED', courier: 'Alex Mercer', weight: '5.1 kg', stopOrder: 2, risk: 'LOW' },
+      { id: 'NX-9023', recipient: 'Elena Rostova', phone: '+1 (555) 345-9876', address: '350 5th Avenue, Suite 410', lat: 40.7588, lng: -73.9851, window: '10:00 AM - 11:30 AM', priority: 'STANDARD', status: 'DELIVERED', courier: 'Elena Rostova', weight: '1.2 kg', stopOrder: 3, risk: 'LOW' },
+      { id: 'NX-9024', recipient: 'Marcus Vance', phone: '+1 (555) 654-3210', address: '45 Rockefeller Plaza, Floor 9', lat: 40.7520, lng: -73.9890, window: '10:30 AM - 12:00 PM', priority: 'STANDARD', status: 'DELIVERED', courier: 'Marcus Vance', weight: '3.8 kg', stopOrder: 4, risk: 'LOW' },
+      { id: 'NX-9025', recipient: 'Sophia Patel', phone: '+1 (555) 432-1098', address: '1042 Birchwood Blvd, Sector 4', lat: 40.7485, lng: -73.9912, window: '11:00 AM - 12:30 PM', priority: 'HIGH', status: 'IN_TRANSIT', courier: 'Alex Mercer', weight: '4.5 kg', stopOrder: 5, risk: 'LOW' },
+      { id: 'NX-9026', recipient: 'Lucas Thorne', phone: '+1 (555) 901-2345', address: '88 Pine Street, Suite 1200', lat: 40.7550, lng: -73.9720, window: '11:30 AM - 01:00 PM', priority: 'STANDARD', status: 'IN_TRANSIT', courier: 'Alex Mercer', weight: '1.9 kg', stopOrder: 6, risk: 'LOW' },
+      { id: 'NX-9027', recipient: 'Amara Chen', phone: '+1 (555) 789-0123', address: '620 8th Avenue, Floor 32', lat: 40.7600, lng: -73.9650, window: '12:00 PM - 01:30 PM', priority: 'URGENT', status: 'IN_TRANSIT', courier: 'Sarah Connor', weight: '6.2 kg', stopOrder: 7, risk: 'LOW' },
+      { id: 'NX-9028', recipient: 'Brandon Kelly', phone: '+1 (555) 567-8901', address: '500 5th Avenue, Suite 800', lat: 40.7670, lng: -73.9710, window: '01:30 PM - 02:45 PM', priority: 'STANDARD', status: 'DELAYED', courier: 'Alex Mercer', weight: '2.1 kg', stopOrder: 8, risk: 'HIGH' },
+      { id: 'NX-9029', recipient: 'Olivia Wright', phone: '+1 (555) 678-9012', address: '220 Central Park South', lat: 40.7710, lng: -73.9800, window: '02:00 PM - 03:30 PM', priority: 'STANDARD', status: 'ASSIGNED', courier: 'David Kim', weight: '3.4 kg', stopOrder: 9, risk: 'LOW' },
+      { id: 'NX-9030', recipient: 'Vikram Sengupta', phone: '+1 (555) 789-3456', address: '1540 Broadway, Times Square', lat: 40.7630, lng: -73.9880, window: '02:30 PM - 04:00 PM', priority: 'HIGH', status: 'ASSIGNED', courier: 'Sarah Connor', weight: '5.0 kg', stopOrder: 10, risk: 'LOW' },
+      { id: 'NX-9031', recipient: 'Emily Zhang', phone: '+1 (555) 890-4567', address: '88 Columbus Circle, Floor 15', lat: 40.7580, lng: -73.9950, window: '10:00 AM - 11:30 AM', priority: 'URGENT', status: 'IN_TRANSIT', courier: 'Sarah Connor', weight: '2.8 kg', stopOrder: 11, risk: 'LOW' },
+      { id: 'NX-9032', recipient: 'Nathan Drake', phone: '+1 (555) 901-5678', address: '30 Rockefeller Plaza, Suite 440', lat: 40.7510, lng: -73.9800, window: '03:30 PM - 05:00 PM', priority: 'STANDARD', status: 'ASSIGNED', courier: 'Sarah Connor', weight: '4.1 kg', stopOrder: 12, risk: 'LOW' }
+    ];
+
+    let adminMapInstance = null;
+    let adminMapStyle = 'satellite';
+    let adminBaseTileLayer = null;
+    let adminLabelsTileLayer = null;
+    let adminMapDimension = '2d';
+    let adminMapMarkers = {};
+    let adminVanMarkers = {};
+    let adminHubMarkers = {};
+    let adminMapPolyline = null;
+    let adminRoadPathCoords = [];
+    let adminLeadVanMarker = null;
+    let adminLeadVanTimer = null;
+    let adminLeadVanIndex = 0;
+    let adminMapShowCompleted = true;
+    let adminDrawerTab = 'stops';
+    let userLiveExactCoords = null;
+    let userLiveExactInfo = { city: 'Metro Corridor', road: 'Main Transit Way' };
+    let isAutoDetectingLocation = false;
+    let currentStreetViewCoords = [40.7485, -73.9912];
+    let isStreetViewExpanded = false;
+
+    // High-resolution Esri World Satellite Imagery layer URLs (same as aws.html)
+    const SATELLITE_TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+    const SATELLITE_LABELS_URL = 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+
+    // Precise road angle calculation between two coordinates (same as aws.html)
+    function calculateBearing(lat1, lon1, lat2, lon2) {
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
+      const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+                Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon);
+      return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    }
+
+    // Densify road polyline into smooth ~6-8 meter steps so the van glides along every road bend (same as aws.html)
+    function densifyRoadCoordinates(rawCoords, stepMeters = 7) {
+      if (!rawCoords || rawCoords.length < 2) return rawCoords || [];
+      const densified = [];
+
+      for (let i = 0; i < rawCoords.length - 1; i++) {
+        const p1 = rawCoords[i];
+        const p2 = rawCoords[i + 1];
+        densified.push(p1);
+
+        const latDiff = (p2[0] - p1[0]) * 111320;
+        const lngDiff = (p2[1] - p1[1]) * 111320 * Math.cos((p1[0] + p2[0]) * Math.PI / 360);
+        const distMeters = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+
+        if (distMeters > stepMeters) {
+          const numSteps = Math.floor(distMeters / stepMeters);
+          for (let s = 1; s <= numSteps; s++) {
+            const frac = s / (numSteps + 1);
+            densified.push([
+              p1[0] + (p2[0] - p1[0]) * frac,
+              p1[1] + (p2[1] - p1[1]) * frac
+            ]);
+          }
+        }
+      }
+      densified.push(rawCoords[rawCoords.length - 1]);
+      return densified;
+    }
+
+    // Street network fallback: routes along orthogonal street and avenue grids (same as aws.html)
+    function generateStreetGridPath(points) {
+      if (!points || points.length < 2) return points || [];
+      const path = [];
+      for (let i = 0; i < points.length - 1; i++) {
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const corner = [p1[0], p2[1]];
+        const leg1 = densifyRoadCoordinates([p1, corner], 8);
+        const leg2 = densifyRoadCoordinates([corner, p2], 8);
+        path.push(...leg1, ...leg2);
+      }
+      return path;
+    }
+
+    // High-performance directional van marker (same as aws.html)
+    function createRoadVanIcon(bearing = 0, iconDomId = 'adminLeadVanIconBody', label = 'Amazon EV Van') {
+      return L.divIcon({
+        className: 'van-bearing-marker',
+        html: `
+          <div style="position:relative; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+            <span style="position:absolute; inset:2px; border-radius:50%; background:rgba(56,189,248,0.35); animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></span>
+            <div id="${iconDomId}" style="transform: rotate(${Math.round(bearing)}deg); transition: transform 0.08s linear; width:34px; height:34px; border-radius:50%; background:#0F172A; border:2.5px solid #38BDF8; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(56,189,248,0.9); z-index:2; cursor:pointer;" title="${label} • Locked to road">
+              <svg viewBox="0 0 24 24" style="width:19px; height:19px; fill:#38BDF8;" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-2 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+              </svg>
+            </div>
+          </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+      });
+    }
+
+    // Fetch real road coordinates using OSRM driving engine (same as aws.html)
+    async function getDrivingRoadCoordinates(waypoints) {
+      if (!waypoints || waypoints.length < 2) return { coords: waypoints || [], distanceKm: '0.0' };
+      try {
+        const coordString = waypoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
+        const url = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson&steps=true`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.routes && data.routes[0] && data.routes[0].geometry) {
+            const roadPoints = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+            return {
+              coords: densifyRoadCoordinates(roadPoints, 6),
+              distanceKm: (data.routes[0].distance / 1000).toFixed(1)
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('OSRM multi-waypoint query failed, attempting leg-by-leg road routing...');
+      }
+
+      // Leg-by-leg fallback with dense interpolation
+      try {
+        const allRoadPoints = [];
+        let totalDist = 0;
+        for (let i = 0; i < waypoints.length - 1; i++) {
+          const w1 = waypoints[i];
+          const w2 = waypoints[i + 1];
+          try {
+            const legUrl = `https://router.project-osrm.org/route/v1/driving/${w1[1]},${w1[0]};${w2[1]},${w2[0]}?overview=full&geometries=geojson`;
+            const legRes = await fetch(legUrl, { signal: AbortSignal.timeout(2500) });
+            if (legRes.ok) {
+              const legData = await legRes.json();
+              if (legData && legData.routes && legData.routes[0]) {
+                const pts = legData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                allRoadPoints.push(...pts);
+                totalDist += legData.routes[0].distance || 0;
+                continue;
+              }
+            }
+          } catch (_) {}
+          allRoadPoints.push(...generateStreetGridPath([w1, w2]));
+        }
+        if (allRoadPoints.length > 2) {
+          return {
+            coords: densifyRoadCoordinates(allRoadPoints, 6),
+            distanceKm: (totalDist ? (totalDist / 1000).toFixed(1) : '38.4')
+          };
+        }
+      } catch (e) {}
+
+      return {
+        coords: generateStreetGridPath(waypoints),
+        distanceKm: '38.4'
+      };
+    }
+
+    async function initAdminFleetMap() {
+      const container = document.getElementById('adminFleetMap');
+      if (!container || container.offsetWidth === 0) return;
+
+      if (adminLeadVanTimer) {
+        clearInterval(adminLeadVanTimer);
+        adminLeadVanTimer = null;
+      }
+
+      if (adminMapInstance) {
+        adminMapInstance.remove();
+        adminMapInstance = null;
+        adminMapMarkers = {};
+        adminVanMarkers = {};
+        adminHubMarkers = {};
+      }
+
+      const centerCoord = userLiveExactCoords || [ADMIN_HUBS[0].lat, ADMIN_HUBS[0].lng];
+
+      // Initialize with Esri Satellite Imagery + Hybrid Labels (identical to aws.html)
+      adminMapInstance = L.map('adminFleetMap', {
+        zoomControl: true,
+        attributionControl: false
+      }).setView(centerCoord, 13);
+
+      if (adminMapStyle === 'satellite') {
+        adminBaseTileLayer = L.tileLayer(SATELLITE_TILE_URL, {
+          maxZoom: 19,
+          attribution: 'Esri World Imagery'
+        }).addTo(adminMapInstance);
+
+        adminLabelsTileLayer = L.tileLayer(SATELLITE_LABELS_URL, {
+          maxZoom: 19,
+          opacity: 0.85
+        }).addTo(adminMapInstance);
+      } else {
+        adminBaseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19
+        }).addTo(adminMapInstance);
+      }
+
+      // 1. Plot Warehouse Hubs
+      ADMIN_HUBS.forEach((hub, idx) => {
+        const hubIcon = L.divIcon({
+          className: 'custom-hub-marker',
+          html: `<div style="background:#F59E0B; color:#FFFFFF; width:30px; height:30px; border-radius:50%; border:2px solid #FFFFFF; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.5); font-weight:700; font-size:11px;">WH</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+        const m = L.marker([hub.lat, hub.lng], { icon: hubIcon })
+          .addTo(adminMapInstance)
+          .bindPopup(`
+            <div style="min-width:180px;">
+              <b style="font-size:13px; color:#0F172A;">${hub.name}</b>
+              <div style="font-size:11px; color:#475569; margin-top:2px;">${hub.vans} Delivery Vans Active</div>
+              <div style="font-size:11px; color:#0284C7; margin-top:2px; font-weight:600;">Origin Hub & Dock</div>
+            </div>
+          `);
+        adminHubMarkers[hub.id] = m;
+      });
+
+      // 2. Plot Active Route Stops (from ADMIN_DELIVERIES)
+      const activeStops = (adminMapShowCompleted
+        ? [...ADMIN_DELIVERIES]
+        : ADMIN_DELIVERIES.filter(d => d.status !== 'DELIVERED')
+      ).sort((a, b) => a.stopOrder - b.stopOrder);
+
+      const routePoints = [[ADMIN_HUBS[0].lat, ADMIN_HUBS[0].lng]];
+
+      activeStops.forEach(item => {
+        routePoints.push([item.lat, item.lng]);
+
+        let pinColor = '#0284C7';
+        if (item.status === 'DELIVERED') pinColor = '#10B981';
+        else if (item.status === 'IN_TRANSIT') pinColor = '#2563EB';
+        else if (item.risk === 'HIGH' || item.status === 'DELAYED') pinColor = '#EF4444';
+
+        const markerIcon = L.divIcon({
+          className: 'custom-map-marker',
+          html: `<div style="background:${pinColor}; color:#FFFFFF; width:26px; height:26px; border-radius:50%; border:2px solid #FFFFFF; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; box-shadow:0 2px 8px rgba(0,0,0,0.4);">${item.stopOrder}</div>`,
+          iconSize: [26, 26],
+          iconAnchor: [13, 13]
+        });
+
+        const marker = L.marker([item.lat, item.lng], { icon: markerIcon })
+          .addTo(adminMapInstance)
+          .bindPopup(`
+            <div style="min-width:200px;">
+              <div style="font-weight:700; font-size:13px; color:#0F172A;">Stop #${item.stopOrder}: ${item.recipient}</div>
+              <div style="font-size:11px; color:#475569; margin-top:2px;">${item.address}</div>
+              <div style="font-size:11px; color:#0369A1; font-weight:600; margin-top:4px;">${item.id} • ${item.window}</div>
+              <div style="font-size:10px; color:#64748B; margin-top:2px;">Courier: ${item.courier || 'Alex Mercer'}</div>
+              <div style="margin-top:8px; display:flex; gap:4px; flex-wrap:wrap;">
+                <button onclick="openPackageDetailModal('${item.id}')" style="background:#2563EB; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">
+                  Inspect Stop
+                </button>
+                <button onclick="openStreetViewDock(${item.lat}, ${item.lng}, 'Stop #${item.stopOrder}: ${item.recipient}')" style="background:#0891B2; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">
+                  🚶 3D Street View
+                </button>
+              </div>
+            </div>
+          `);
+
+        adminMapMarkers[item.id] = marker;
+      });
+
+      // 3. Plot Fleet Delivery Vans with Live Telemetry
+      ADMIN_DRIVERS.forEach(drv => {
+        const isComplete = drv.status === 'COMPLETED';
+        const color = isComplete ? '#10B981' : '#2563EB';
+
+        const vanIcon = L.divIcon({
+          className: 'custom-van-marker',
+          html: `<div style="background:${color}; color:#FFFFFF; width:32px; height:32px; border-radius:50%; border:2px solid #FFFFFF; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.5); font-size:13px;" title="${drv.name} (#${drv.vanId})">🚐</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
+        });
+
+        const m = L.marker([drv.lat, drv.lng], { icon: vanIcon })
+          .addTo(adminMapInstance)
+          .bindPopup(`
+            <div style="min-width:200px;">
+              <div style="font-weight:700; font-size:13px; color:#0F172A;">${drv.name} (${drv.vanId})</div>
+              <div style="font-size:11px; color:#475569; margin-top:2px;">Model: ${drv.vehicleModel}</div>
+              <div style="font-size:11px; color:#0284C7; font-weight:600; margin-top:4px;">Stops: ${drv.packagesDelivered}/${drv.packagesAssigned} Completed • Battery: ${drv.batteryPct}%</div>
+              <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+                <button onclick="inspectDriverRc('${drv.id}')" style="background:#2563EB; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">Inspect RC Book</button>
+                <button onclick="openStreetViewDock(${drv.lat}, ${drv.lng}, 'Fleet Van: ${drv.name} (${drv.vanId})')" style="background:#0891B2; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">🚶 Street Cam</button>
+              </div>
+            </div>
+          `);
+        adminVanMarkers[drv.id] = m;
+      });
+
+      // 4. Render Pulsing Marker for Exact Live User Location (if active)
+      if (userLiveExactCoords) {
+        const exactIcon = L.divIcon({
+          className: 'exact-live-user-marker',
+          html: `<div style="position:relative; display:flex; align-items:center; justify-content:center; width:36px; height:36px;">
+            <div style="position:absolute; width:36px; height:36px; border-radius:50%; background:rgba(6, 182, 212, 0.45); animation:locRadarPulse 1.8s infinite ease-out;"></div>
+            <div style="position:absolute; width:24px; height:24px; border-radius:50%; background:#0284C7; border:2.5px solid #FFFFFF; box-shadow:0 0 14px rgba(2, 132, 199, 0.95); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:800;">📍</div>
+            <div style="position:absolute; bottom:-17px; background:rgba(15,23,42,0.92); color:#38BDF8; font-size:9px; font-weight:700; padding:1px 6px; border-radius:4px; white-space:nowrap; border:1px solid rgba(56,189,248,0.5); pointer-events:none;">YOU ARE HERE</div>
+          </div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+        const exactM = L.marker(userLiveExactCoords, { icon: exactIcon, zIndexOffset: 950 })
+          .addTo(adminMapInstance)
+          .bindPopup(`<b>📍 Your Exact Live Location</b><br>${userLiveExactInfo.road || 'Current Transit Way'}, ${userLiveExactInfo.city || 'Metro Area'}<div style="margin-top:6px;"><button onclick="openStreetViewDock(${userLiveExactCoords[0]}, ${userLiveExactCoords[1]}, 'Your Exact Live Location')" style="background:#0891B2; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">🚶 Open 3D Street View</button></div>`);
+        adminMapMarkers['exact-live-user'] = exactM;
+      }
+
+      // 5. Draw glowing animated road polyline
+      adminMapPolyline = L.polyline(routePoints, {
+        color: '#38BDF8',
+        weight: 4.5,
+        opacity: 0.95,
+        className: 'animated-route-line'
+      }).addTo(adminMapInstance);
+
+      // 6. Lead Delivery Road Van Marker
+      adminLeadVanMarker = L.marker(routePoints[0], {
+        icon: createRoadVanIcon(0, 'adminLeadVanIconBody', 'Lead Amazon Fleet Van (VAN-402)'),
+        zIndexOffset: 1000
+      }).addTo(adminMapInstance)
+        .bindPopup(`<b>Amazon Fleet Lead Van (#VAN-402)</b><br>Live GPS Satellite Road Tracking Active<div style="margin-top:6px;"><button onclick="syncStreetViewToVan()" style="background:#0891B2; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">🚶 Live Driver Street Cam</button></div>`);
+
+      if (routePoints.length > 1) {
+        adminMapInstance.fitBounds(L.latLngBounds(routePoints), { padding: [36, 36] });
+      }
+
+      // 7. Fetch precise road driving path from OSRM
+      const roadData = await getDrivingRoadCoordinates(routePoints);
+      adminRoadPathCoords = roadData.coords;
+
+      if (adminMapInstance && adminMapPolyline && adminRoadPathCoords.length > 1) {
+        adminMapPolyline.setLatLngs(adminRoadPathCoords);
+      }
+
+      const distLabel = document.getElementById('adminMapDistanceLabel');
+      if (distLabel && roadData.distanceKm) {
+        distLabel.innerText = `🛣️ Road: ${roadData.distanceKm} km`;
+      }
+
+      // 8. Start smooth van road animation with dynamic heading
+      animateAdminLeadVan();
+
+      // 9. Update drawer list and HUD
+      renderAdminMapDrawer();
+      updateAdminHud();
+
+      setTimeout(() => {
+        if (adminMapInstance) adminMapInstance.invalidateSize();
+      }, 250);
+
+      lucide.createIcons();
+    }
+
+    function animateAdminLeadVan() {
+      if (adminLeadVanTimer) clearInterval(adminLeadVanTimer);
+      if (!adminRoadPathCoords || adminRoadPathCoords.length < 2) return;
+
+      adminLeadVanIndex = 0;
+      adminLeadVanTimer = setInterval(() => {
+        if (!adminMapInstance || !adminLeadVanMarker || adminRoadPathCoords.length < 2) return;
+
+        adminLeadVanIndex = (adminLeadVanIndex + 1) % adminRoadPathCoords.length;
+        const pt = adminRoadPathCoords[adminLeadVanIndex];
+        const nextPt = adminRoadPathCoords[(adminLeadVanIndex + 1) % adminRoadPathCoords.length];
+
+        adminLeadVanMarker.setLatLng(pt);
+
+        const bearing = calculateBearing(pt[0], pt[1], nextPt[0], nextPt[1]);
+        const bodyEl = document.getElementById('adminLeadVanIconBody');
+        if (bodyEl) {
+          bodyEl.style.transform = `rotate(${Math.round(bearing)}deg)`;
+        }
+
+        // In 3D Street View mode, continuously follow the lead van
+        if (adminMapDimension === 'street' && adminMapInstance && adminLeadVanIndex % 5 === 0) {
+          adminMapInstance.panTo(pt, { animate: true, duration: 0.1 });
+        }
+      }, 45);
+    }
+
+    function updateAdminHud() {
+      const nextStop = ADMIN_DELIVERIES.find(d => d.status === 'IN_TRANSIT') || ADMIN_DELIVERIES.find(d => d.status !== 'DELIVERED') || ADMIN_DELIVERIES[0];
+      if (!nextStop) return;
+
+      const stopEl = document.getElementById('adminHudStopNumber');
+      const recipEl = document.getElementById('adminHudNextRecipient');
+      const addrEl = document.getElementById('adminHudNextAddress');
+      const etaEl = document.getElementById('adminHudEta');
+      const distEl = document.getElementById('adminHudDistance');
+
+      if (stopEl) stopEl.innerText = `Stop #${nextStop.stopOrder}`;
+      if (recipEl) recipEl.innerText = nextStop.recipient;
+      if (addrEl) addrEl.innerText = nextStop.address;
+      if (etaEl) etaEl.innerText = `ETA: ${nextStop.window.split('-')[0].trim()}`;
+      if (distEl) distEl.innerText = '2.4 km away';
+    }
+
+    function renderAdminMapDrawer() {
+      const container = document.getElementById('adminMapDrawerList');
+      const counter = document.getElementById('adminMapStopCounter');
+      if (!container) return;
+
+      if (adminDrawerTab === 'stops') {
+        const activeStops = adminMapShowCompleted
+          ? [...ADMIN_DELIVERIES]
+          : ADMIN_DELIVERIES.filter(d => d.status !== 'DELIVERED');
+
+        if (counter) counter.innerText = `${activeStops.length} Stops`;
+
+        container.innerHTML = activeStops.map(item => {
+          let statusBadge = item.status.replace('_', ' ');
+          let statusColor = 'text-blue-700 bg-blue-100';
+          if (item.status === 'DELIVERED') statusColor = 'text-emerald-700 bg-emerald-100';
+          if (item.status === 'DELAYED' || item.risk === 'HIGH') statusColor = 'text-rose-700 bg-rose-100';
+
+          return `
+            <div onclick="focusAdminMapOnStop('${item.id}')" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 cursor-pointer transition-all space-y-1.5 group">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="w-5 h-5 rounded bg-slate-200 text-blue-700 font-mono font-bold text-[10px] flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">#${item.stopOrder}</span>
+                  <span class="font-bold text-xs text-slate-900 truncate max-w-[130px]">${item.recipient}</span>
+                </div>
+                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold ${statusColor}">${statusBadge}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 truncate pl-7">${item.address}</p>
+              <div class="flex items-center justify-between pl-7 text-[10px] text-slate-500 font-mono">
+                <span class="text-blue-700 font-semibold">${item.window}</span>
+                <button onclick="event.stopPropagation(); openStreetViewDock(${item.lat}, ${item.lng}, 'Stop #${item.stopOrder}: ${item.recipient}')" class="text-cyan-700 hover:text-cyan-900 font-bold flex items-center gap-0.5" title="Open 3D Street View">
+                  🚶 Street View
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        if (counter) counter.innerText = `${ADMIN_DRIVERS.length} Vans`;
+
+        container.innerHTML = ADMIN_DRIVERS.map(drv => {
+          const isComplete = drv.status === 'COMPLETED';
+          const colorClass = isComplete ? 'text-emerald-700 bg-emerald-100' : 'text-blue-700 bg-blue-100';
+
+          return `
+            <div onclick="focusAdminMapOnDriver('${drv.id}')" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 cursor-pointer transition-all space-y-1.5 group">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="w-5 h-5 rounded bg-slate-200 text-slate-800 text-[10px] flex items-center justify-center font-bold">🚐</span>
+                  <span class="font-bold text-xs text-slate-900">${drv.name}</span>
+                </div>
+                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold ${colorClass}">${drv.status.replace('_', ' ')}</span>
+              </div>
+              <div class="text-[11px] text-slate-500 pl-7">${drv.vanId} • ${drv.vehicleModel}</div>
+              <div class="flex items-center justify-between pl-7 text-[10px] text-slate-600 font-mono">
+                <span>Stops: ${drv.packagesDelivered}/${drv.packagesAssigned} • Batt: ${drv.batteryPct}%</span>
+                <button onclick="event.stopPropagation(); openStreetViewDock(${drv.lat}, ${drv.lng}, 'Fleet Van: ${drv.name} (${drv.vanId})')" class="text-cyan-700 hover:text-cyan-900 font-bold flex items-center gap-0.5">
+                  🚶 Street Cam
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Update counters in summary footer
+      const enRouteCount = ADMIN_DRIVERS.filter(d => d.status !== 'COMPLETED').length;
+      const completedCount = ADMIN_DRIVERS.filter(d => d.status === 'COMPLETED').length;
+      const elEnRoute = document.getElementById('adminMapEnRouteCount');
+      const elCompleted = document.getElementById('adminMapCompletedCount');
+      if (elEnRoute) elEnRoute.innerText = enRouteCount;
+      if (elCompleted) elCompleted.innerText = completedCount;
+
+      lucide.createIcons();
+    }
+
+    function switchDrawerTab(tab) {
+      adminDrawerTab = tab;
+      const btnStops = document.getElementById('drawerTabStopsBtn');
+      const btnVans = document.getElementById('drawerTabVansBtn');
+
+      if (btnStops && btnVans) {
+        if (tab === 'stops') {
+          btnStops.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white btn-solid-white shadow-sm transition-all';
+          btnVans.className = 'px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all';
+        } else {
+          btnVans.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white btn-solid-white shadow-sm transition-all';
+          btnStops.className = 'px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all';
+        }
+      }
+      renderAdminMapDrawer();
+      playBeep(480, 0.04);
+    }
+
+    function focusAdminMapOnStop(shipmentId) {
+      const item = ADMIN_DELIVERIES.find(d => d.id === shipmentId);
+      if (!item || !adminMapInstance) return;
+
+      adminMapInstance.flyTo([item.lat, item.lng], 16, { duration: 1 });
+      if (adminMapMarkers[shipmentId]) {
+        adminMapMarkers[shipmentId].openPopup();
+      }
+      playBeep(580, 0.05);
+    }
+
+    function focusAdminMapOnDriver(driverId) {
+      const d = ADMIN_DRIVERS.find(x => x.id === driverId);
+      if (!d || !adminMapInstance) return;
+
+      adminMapInstance.flyTo([d.lat, d.lng], 16, { duration: 1 });
+      if (adminVanMarkers[driverId]) {
+        adminVanMarkers[driverId].openPopup();
+      }
+      playBeep(560, 0.05);
+    }
+
+    function setAdminMapDimension(dim) {
+      adminMapDimension = dim;
+      const wrapper = document.getElementById('adminFleetMapWrapper');
+      const btn2d = document.getElementById('adminMap2dBtn');
+      const btn3d = document.getElementById('adminMap3dBtn');
+      const btnStreet = document.getElementById('adminMapStreetBtn');
+      const badge = document.getElementById('adminMap3dBadge');
+
+      if (wrapper) {
+        wrapper.classList.remove('mode-2d', 'mode-3d', 'mode-street');
+        wrapper.classList.add(`mode-${dim}`);
+      }
+
+      const inactiveCls = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-700 hover:text-slate-900 flex items-center gap-1';
+      const activeCls = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-sm flex items-center gap-1 btn-solid-white';
+
+      if (btn2d) btn2d.className = (dim === '2d') ? activeCls : inactiveCls;
+      if (btn3d) btn3d.className = (dim === '3d') ? activeCls : inactiveCls;
+      if (btnStreet) btnStreet.className = (dim === 'street') ? activeCls : inactiveCls;
+
+      if (badge) {
+        if (dim === 'street') {
+          badge.classList.remove('hidden');
+          badge.innerHTML = '<i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-400"></i><span>3D STREET VIEW (GROUND LEVEL)</span>';
+        } else if (dim === '3d') {
+          badge.classList.remove('hidden');
+          badge.innerHTML = '<i data-lucide="box" class="w-3.5 h-3.5 text-cyan-400"></i><span>3D SATELLITE</span>';
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      if (dim === 'street') {
+        const target = (adminLeadVanMarker && adminLeadVanMarker.getLatLng)
+          ? [adminLeadVanMarker.getLatLng().lat, adminLeadVanMarker.getLatLng().lng]
+          : (userLiveExactCoords || [ADMIN_HUBS[0].lat, ADMIN_HUBS[0].lng]);
+        if (adminMapInstance) adminMapInstance.flyTo(target, 18, { duration: 1.2 });
+        openStreetViewDock(target[0], target[1], `${userLiveExactInfo.road || 'Live Road'} • 3D Street View`);
+        showToast('Operations Map: 3D Ground-Level Street View Activated.', 'info');
+      } else if (dim === '3d') {
+        showToast('Operations Map: 3D Satellite Perspective Activated.', 'info');
+      } else {
+        showToast('Operations Map: 2D Satellite Top-Down View Activated.', 'info');
+      }
+
+      playBeep(dim === 'street' ? 700 : (dim === '3d' ? 620 : 500), 0.04);
+      setTimeout(() => {
+        if (adminMapInstance) adminMapInstance.invalidateSize();
+        lucide.createIcons();
+      }, 300);
+    }
+
+    function centerAdminFleetMap() {
+      if (!adminMapInstance) return;
+      if (userLiveExactCoords) {
+        adminMapInstance.flyTo(userLiveExactCoords, 15, { duration: 1.2 });
+        showToast('Centered on your exact live location.', 'info');
+      } else {
+        adminMapInstance.flyTo([ADMIN_HUBS[0].lat, ADMIN_HUBS[0].lng], 13, { duration: 1.2 });
+        showToast('Centered on Origin Warehouse Hub WH-04.', 'info');
+      }
+      playBeep(500, 0.04);
+    }
+
+    function toggleAdminMapCompletedStops() {
+      adminMapShowCompleted = !adminMapShowCompleted;
+      const btnText = document.getElementById('adminMapCompletedToggleText');
+      if (btnText) {
+        btnText.innerText = adminMapShowCompleted ? 'Show Remaining Only' : 'Show All Stops';
+      }
+      initAdminFleetMap();
+      showToast(adminMapShowCompleted ? 'Displaying all 12 completed and active stops.' : 'Filtered to active remaining stops only.', 'info');
+      playBeep(420, 0.04);
+    }
+
+    function recalculateAdminRouteTraffic() {
+      showToast('Ingesting live traffic telemetry vectors... Route recalculation complete.', 'info');
+      playBeep(600, 0.08);
+
+      if (adminMapPolyline) {
+        adminMapPolyline.setStyle({ color: '#22D3EE' });
+        setTimeout(() => adminMapPolyline.setStyle({ color: '#38BDF8' }), 1200);
+      }
+    }
+
+    function triggerAdminAiRouteOptimization() {
+      showToast('Amazon Route Neural TSP Engine recalculated multi-van sequential trajectories! Saved 18.6 km & 42 mins.', 'success');
+      playSuccessChime();
+
+      if (adminMapPolyline) {
+        adminMapPolyline.setStyle({ color: '#10B981' });
+        setTimeout(() => adminMapPolyline.setStyle({ color: '#38BDF8' }), 1500);
+      }
+    }
+
+    function startAdminTurnByTurnSim() {
+      const nextStop = ADMIN_DELIVERIES.find(d => d.status === 'IN_TRANSIT') || ADMIN_DELIVERIES[4];
+      showToast(`Starting turn-by-turn HUD simulation for Stop #${nextStop.stopOrder} (${nextStop.recipient})...`, 'info');
+      playBeep(700, 0.1);
+
+      setTimeout(() => {
+        showToast(`Turn left in 300 meters onto ${nextStop.address.split(',')[0]}. Speed 45 km/h.`, 'info');
+        playBeep(650, 0.08);
+      }, 1500);
+    }
+
+    async function enableAdminLiveGpsRoute(userTriggered = true) {
+      if (isAutoDetectingLocation) return;
+      isAutoDetectingLocation = true;
+      const gpsBtnText = document.getElementById('adminMapGpsBtnText');
+      if (gpsBtnText) gpsBtnText.innerText = 'Detecting...';
+
+      let detectedLat = 11.005509;
+      let detectedLng = 76.966489;
+      let detectedCity = 'Coimbatore';
+      let detectedRoad = 'Dr Nanjappa Road';
+
+      // Attempt browser GPS with high accuracy
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          });
+        });
+        detectedLat = pos.coords.latitude;
+        detectedLng = pos.coords.longitude;
+      } catch (err) {
+        // Fallback to IP geolocation
+        try {
+          const ipRes = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            if (ipData.latitude && ipData.longitude) {
+              detectedLat = ipData.latitude;
+              detectedLng = ipData.longitude;
+              detectedCity = ipData.city || detectedCity;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // Snap origin to nearest drivable road via OSRM
+      let snappedLat = detectedLat;
+      let snappedLng = detectedLng;
+      try {
+        const snapRes = await fetch(`https://router.project-osrm.org/nearest/v1/driving/${detectedLng},${detectedLat}?number=1`, { signal: AbortSignal.timeout(3000) });
+        if (snapRes.ok) {
+          const snapData = await snapRes.json();
+          if (snapData && snapData.waypoints && snapData.waypoints[0]) {
+            snappedLat = snapData.waypoints[0].location[1];
+            snappedLng = snapData.waypoints[0].location[0];
+            if (snapData.waypoints[0].name) detectedRoad = snapData.waypoints[0].name;
+          }
+        }
+      } catch (_) {}
+
+      // Reverse geocode city & road
+      try {
+        const revRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${detectedLat}&lon=${detectedLng}&zoom=14`, {
+          headers: { 'User-Agent': 'AmazonRouteAdmin/1.0 (Logistics)' },
+          signal: AbortSignal.timeout(3000)
+        });
+        if (revRes.ok) {
+          const revData = await revRes.json();
+          const addr = revData.address || {};
+          const area = addr.suburb || addr.neighbourhood || addr.city || addr.town || addr.county;
+          if (area) detectedCity = area;
+          if (addr.road) detectedRoad = addr.road;
+        }
+      } catch (_) {}
+
+      userLiveExactCoords = [snappedLat, snappedLng];
+      userLiveExactInfo = {
+        city: detectedCity,
+        road: detectedRoad,
+        lat: detectedLat,
+        lng: detectedLng
+      };
+
+      // Update primary Hub origin
+      ADMIN_HUBS[0].lat = snappedLat;
+      ADMIN_HUBS[0].lng = snappedLng;
+      ADMIN_HUBS[0].name = `${detectedCity} Terminal Hub WH-04`;
+
+      // Distribute stops on real nearby roads around detected location
+      const offsets = [
+        [0.0055, 0.0045], [0.0090, -0.0035], [0.0120, 0.0070],
+        [0.0045, 0.0125], [-0.0055, 0.0090], [-0.0095, -0.0030],
+        [-0.0080, -0.0090], [0.0025, -0.0105], [0.0140, -0.0060],
+        [-0.0110, 0.0080], [0.0070, -0.0120], [-0.0030, 0.0140]
+      ];
+
+      const snapPromises = ADMIN_DELIVERIES.map(async (item, idx) => {
+        const off = offsets[idx % offsets.length];
+        const rawLat = detectedLat + off[0];
+        const rawLng = detectedLng + off[1];
+        try {
+          const sRes = await fetch(`https://router.project-osrm.org/nearest/v1/driving/${rawLng},${rawLat}?number=1`, { signal: AbortSignal.timeout(2000) });
+          if (sRes.ok) {
+            const sData = await sRes.json();
+            if (sData && sData.waypoints && sData.waypoints[0]) {
+              item.lat = sData.waypoints[0].location[1];
+              item.lng = sData.waypoints[0].location[0];
+              if (sData.waypoints[0].name) {
+                item.address = `${sData.waypoints[0].name}, ${detectedCity}`;
+              }
+              return;
+            }
+          }
+        } catch (_) {}
+        item.lat = +rawLat.toFixed(5);
+        item.lng = +rawLng.toFixed(5);
+      });
+      await Promise.all(snapPromises);
+
+      // Also adjust drivers around the hub
+      ADMIN_DRIVERS.forEach((d, idx) => {
+        const off = offsets[(idx + 3) % offsets.length];
+        d.lat = +(detectedLat + off[0] * 0.7).toFixed(5);
+        d.lng = +(detectedLng + off[1] * 0.7).toFixed(5);
+      });
+
+      // Update UI button and subtitle
+      if (gpsBtnText) gpsBtnText.innerText = `📍 ${detectedCity}`;
+      const subtitle = document.getElementById('adminMapSubtitle');
+      if (subtitle) subtitle.innerText = `${detectedCity} Operations Corridor • ${detectedRoad} • Satellite Road Routing Active`;
+
+      // Reinitialize map
+      initAdminFleetMap();
+
+      showToast(`Exact location locked: ${detectedCity} (${detectedRoad}). Satellite road routing active!`, 'success');
+      playSuccessChime();
+      isAutoDetectingLocation = false;
+    }
+
+    function toggleAdminMapLayer() {
+      adminMapStyle = adminMapStyle === 'satellite' ? 'street' : 'satellite';
+      const lbl = document.getElementById('adminMapLayerText');
+      if (lbl) lbl.innerText = adminMapStyle === 'satellite' ? 'Street View' : 'Satellite View';
+      initAdminFleetMap();
+      playBeep(520, 0.04);
+    }
+
+    function triggerGlobalFleetReroute() {
+      triggerAdminAiRouteOptimization();
+    }
+
+    // Street View Dock functions (same as aws.html)
+    function openStreetViewDock(lat, lng, title = '3D Street View') {
+      currentStreetViewCoords = [lat, lng];
+      const dock = document.getElementById('streetViewDock');
+      const iframe = document.getElementById('streetViewIframe');
+      const titleEl = document.getElementById('streetViewDockTitle');
+      const coordsEl = document.getElementById('streetViewCoordsLabel');
+      const loading = document.getElementById('streetViewLoading');
+
+      if (titleEl) titleEl.innerText = title;
+      if (coordsEl) coordsEl.innerText = `${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E`;
+
+      if (dock) {
+        dock.classList.remove('hidden');
+        dock.classList.add('flex');
+      }
+
+      if (loading) loading.style.display = 'flex';
+
+      if (iframe) {
+        const embedUrl = `https://maps.google.com/maps?q=&layer=c&cbll=${lat},${lng}&cbp=11,0,0,0,0&output=svembed`;
+        iframe.src = embedUrl;
+        iframe.onload = () => {
+          if (loading) loading.style.display = 'none';
+        };
+      }
+      lucide.createIcons();
+    }
+
+    function closeStreetViewDock() {
+      const dock = document.getElementById('streetViewDock');
+      if (dock) {
+        dock.classList.add('hidden');
+        dock.classList.remove('flex');
+      }
+    }
+
+    function toggleStreetViewExpand() {
+      const dock = document.getElementById('streetViewDock');
+      const icon = document.getElementById('streetViewExpandIcon');
+      if (!dock) return;
+      isStreetViewExpanded = !isStreetViewExpanded;
+      dock.classList.toggle('street-view-dock-expanded', isStreetViewExpanded);
+      if (icon) {
+        icon.setAttribute('data-lucide', isStreetViewExpanded ? 'minimize-2' : 'maximize-2');
+        lucide.createIcons();
+      }
+    }
+
+    function openExternalStreetView() {
+      const lat = currentStreetViewCoords[0];
+      const lng = currentStreetViewCoords[1];
+      const url = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
+      window.open(url, '_blank');
+    }
+
+    function syncStreetViewToVan() {
+      let target = null;
+      if (adminLeadVanMarker && adminLeadVanMarker.getLatLng) {
+        const ll = adminLeadVanMarker.getLatLng();
+        target = [ll.lat, ll.lng];
+      } else {
+        target = userLiveExactCoords || [ADMIN_HUBS[0].lat, ADMIN_HUBS[0].lng];
+      }
+      openStreetViewDock(target[0], target[1], 'Amazon Lead Van (#VAN-402) • Live Street Cam');
+      showToast('Synced 3D Street View with live vehicle position.', 'success');
+    }
+
+    function openPackageDetailModal(id) {
+      const item = ADMIN_DELIVERIES.find(d => d.id === id);
+      if (!item) return;
+
+      document.getElementById('pkgModalId').innerText = item.id;
+      document.getElementById('pkgModalRecipient').innerText = `Stop #${item.stopOrder}: ${item.recipient}`;
+      document.getElementById('pkgModalAddress').innerText = item.address;
+      document.getElementById('pkgModalWindow').innerText = item.window;
+      document.getElementById('pkgModalPriority').innerText = item.priority;
+      document.getElementById('pkgModalCourier').innerText = item.courier || 'Alex Mercer (#VAN-402)';
+      document.getElementById('pkgModalStatus').innerText = item.status;
+
+      const svBtn = document.getElementById('pkgModalStreetViewBtn');
+      if (svBtn) {
+        svBtn.onclick = () => {
+          closePackageDetailModal();
+          openStreetViewDock(item.lat, item.lng, `Stop #${item.stopOrder}: ${item.recipient}`);
+        };
+      }
+
+      document.getElementById('packageDetailModal').classList.remove('hidden');
+      playBeep(520, 0.05);
+      lucide.createIcons();
+    }
+
+    function closePackageDetailModal() {
+      document.getElementById('packageDetailModal').classList.add('hidden');
+    }
+
+    /* =======================================================================
+       4. DRIVERS TABLE & RC BOOK MODAL & LOCATION
+       ======================================================================= */
+    function renderAdminDriversTable() {
+      const tbody = document.getElementById('adminDriversTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = ADMIN_DRIVERS.map(d => `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="p-3.5">
+            <div class="font-bold text-slate-900">${d.name}</div>
+            <div class="text-[11px] text-slate-500 font-mono">${d.id} • ${d.phone}</div>
+          </td>
+          <td class="p-3.5">
+            <div class="font-semibold text-slate-800">${d.vanId}</div>
+            <div class="text-[11px] text-slate-500">${d.vehicleModel}</div>
+          </td>
+          <td class="p-3.5">
+            <button onclick="inspectDriverRc('${d.id}')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] hover:bg-emerald-200">
+              <i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i>
+              <span>RC Verified</span>
+            </button>
+          </td>
+          <td class="p-3.5 font-medium text-slate-700">${d.hub}</td>
+          <td class="p-3.5">
+            <span class="font-bold text-slate-900">${d.packagesDelivered}</span>
+            <span class="text-slate-500"> / ${d.packagesAssigned}</span>
+            <span class="text-[10px] text-blue-700 ml-1 font-semibold">(${Math.round((d.packagesDelivered/d.packagesAssigned)*100)}%)</span>
+          </td>
+          <td class="p-3.5">
+            <div class="flex items-center gap-1.5">
+              <span class="font-semibold text-slate-800">${d.batteryPct}%</span>
+              <span class="w-12 bg-slate-200 h-1.5 rounded-full overflow-hidden inline-block">
+                <span class="bg-emerald-500 h-full block" style="width: ${d.batteryPct}%"></span>
+              </span>
+            </div>
+          </td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${d.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">
+              ${d.status.replace('_', ' ')}
+            </span>
+          </td>
+          <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
+            <button onclick="locateDriverOnMap('${d.id}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold" title="Locate on Map">
+              Locate
+            </button>
+            <button onclick="inspectDriverRc('${d.id}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold" title="Inspect Vehicle Registration Document">
+              RC Book
+            </button>
+            <button onclick="pingDriver('${d.id}')" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold btn-solid-white" title="Send Telemetry Ping">
+              Ping
+            </button>
+          </td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function locateDriverOnMap(driverId) {
+      const d = ADMIN_DRIVERS.find(x => x.id === driverId);
+      if (!d) return;
+
+      switchAdminTab('fleet-map');
+      setTimeout(() => {
+        if (adminMapInstance) {
+          adminMapInstance.setView([d.lat, d.lng], 15, { animate: true });
+          if (adminVanMarkers[d.id]) {
+            adminVanMarkers[d.id].openPopup();
+          }
+        }
+      }, 200);
+      showToast(`Centered map on driver ${d.name} (${d.vanId}).`, 'info');
+      playBeep(560, 0.05);
+    }
+
+    function inspectDriverRc(id) {
+      const d = ADMIN_DRIVERS.find(x => x.id === id);
+      const app = ADMIN_ONBOARDING_QUEUE.find(x => x.id === id);
+
+      if (app) {
+        document.getElementById('rcModalDriverName').innerText = `${app.name} (${app.id})`;
+        document.getElementById('rcModalPlate').innerText = `Vehicle: ${app.vehicle} • Area: ${app.serviceArea}`;
+        document.getElementById('rcDocRegNo').innerText = `APPL-${app.id.replace('APP-', '')}`;
+        document.getElementById('rcDocOwner').innerText = app.name;
+        document.getElementById('rcDocModel').innerText = app.vehicle;
+      } else {
+        const drv = d || ADMIN_DRIVERS[0];
+        document.getElementById('rcModalDriverName').innerText = `${drv.name} (${drv.vanId})`;
+        document.getElementById('rcModalPlate').innerText = `Plate: ${drv.plate} • Model: ${drv.vehicleModel}`;
+        document.getElementById('rcDocRegNo').innerText = drv.plate;
+        document.getElementById('rcDocOwner').innerText = drv.name;
+        document.getElementById('rcDocModel').innerText = drv.vehicleModel;
+      }
+
+      document.getElementById('rcBookModal').classList.remove('hidden');
+      playBeep(520, 0.04);
+      lucide.createIcons();
+    }
+
+    function closeRcBookModal() {
+      document.getElementById('rcBookModal').classList.add('hidden');
+    }
+
+    function pingDriver(driverId) {
+      const d = ADMIN_DRIVERS.find(x => x.id === driverId);
+      const name = d ? d.name : driverId;
+      showToast(`Dispatched telemetry sync ping to ${name} (${driverId}).`, 'info');
+      playBeep(600, 0.05);
+    }
+
+    function openNewDriverModal() {
+      const modal = document.getElementById('newDriverModal');
+      if (modal) modal.classList.remove('hidden');
+      playBeep(520, 0.04);
+      lucide.createIcons();
+    }
+
+    function closeNewDriverModal() {
+      const modal = document.getElementById('newDriverModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function submitNewDriver(event) {
+      event.preventDefault();
+      const name = document.getElementById('newDriverName')?.value.trim();
+      const phone = document.getElementById('newDriverPhone')?.value.trim();
+      const vehicle = document.getElementById('newDriverVehicle')?.value;
+      const plate = document.getElementById('newDriverPlate')?.value.trim();
+      const hub = document.getElementById('newDriverHub')?.value;
+      const pkgs = parseInt(document.getElementById('newDriverPackages')?.value || '12', 10);
+
+      if (!name || !plate) {
+        showToast('Please fill out driver name and license plate.', 'error');
+        return;
+      }
+
+      const newId = `DRV-${Math.floor(106 + Math.random() * 800)}`;
+      const vanId = `VAN-${Math.floor(416 + Math.random() * 80)}`;
+
+      const newDriver = {
+        id: newId,
+        name: name,
+        vanId: vanId,
+        vehicleModel: vehicle,
+        plate: plate,
+        hub: hub,
+        packagesAssigned: pkgs,
+        packagesDelivered: 0,
+        batteryPct: 100,
+        status: 'EN_ROUTE',
+        lat: 40.75 + (Math.random() - 0.5) * 0.04,
+        lng: -73.98 + (Math.random() - 0.5) * 0.04,
+        rcVerified: true,
+        phone: phone
+      };
+
+      ADMIN_DRIVERS.push(newDriver);
+      renderAdminDriversTable();
+      updateDriverFilterOptions();
+      initAdminFleetMap();
+
+      const countBadge = document.getElementById('badgeDriversCount');
+      if (countBadge) countBadge.innerText = `${ADMIN_DRIVERS.length} Vans`;
+
+      const kpiActive = document.getElementById('kpiActiveVans');
+      if (kpiActive) kpiActive.innerText = `${ADMIN_DRIVERS.length} / 28`;
+
+      closeNewDriverModal();
+      document.getElementById('newDriverForm')?.reset();
+      showToast(`Successfully registered ${name} (#${vanId}) to ${hub}!`, 'success');
+      playSuccessChime();
+    }
+
+    /* =======================================================================
+       5. SHIPMENTS DISPATCH MASTER TABLE
+       ======================================================================= */
+    const ADMIN_SHIPMENTS = [
+      { id: 'NX-9021', recipient: 'Jane Doe', address: '742 Evergreen Terrace', courier: 'Alex Mercer', window: '09:00 AM - 10:30 AM', priority: 'STANDARD', status: 'DELIVERED' },
+      { id: 'NX-9022', recipient: 'Robert Chen', address: '120 Wall Street, Floor 14', courier: 'Alex Mercer', window: '09:45 AM - 11:00 AM', priority: 'HIGH', status: 'DELIVERED' },
+      { id: 'NX-9025', recipient: 'Sophia Patel', address: '1042 Birchwood Blvd', courier: 'Alex Mercer', window: '11:00 AM - 12:30 PM', priority: 'HIGH', status: 'IN_TRANSIT' },
+      { id: 'NX-9028', recipient: 'Brandon Kelly', address: '500 5th Avenue, Suite 800', courier: 'Alex Mercer', window: '01:30 PM - 02:45 PM', priority: 'STANDARD', status: 'DELAYED' },
+      { id: 'NX-9031', recipient: 'Emily Zhang', address: '88 Columbus Circle', courier: 'Sarah Connor', window: '10:00 AM - 11:30 AM', priority: 'URGENT', status: 'IN_TRANSIT' },
+      { id: 'NX-9035', recipient: 'Liam Murphy', address: '30 Rockefeller Plaza', courier: 'Sarah Connor', window: '01:00 PM - 02:30 PM', priority: 'STANDARD', status: 'ASSIGNED' },
+      { id: 'NX-9040', recipient: 'Carlos Santana', address: '150 Greenwich St', courier: 'Marcus Vance', window: '08:30 AM - 10:00 AM', priority: 'HIGH', status: 'DELIVERED' }
+    ];
+
+    function renderAdminShipmentsTable() {
+      const tbody = document.getElementById('adminShipmentsTableBody');
+      if (!tbody) return;
+
+      const q = (document.getElementById('adminShipmentSearch')?.value || '').toLowerCase().trim();
+      const statusFilter = document.getElementById('adminStatusFilter')?.value || 'ALL';
+      const driverFilter = document.getElementById('adminDriverFilter')?.value || 'ALL';
+
+      const filtered = ADMIN_SHIPMENTS.filter(s => {
+        const matchesQ = !q || s.id.toLowerCase().includes(q) || s.recipient.toLowerCase().includes(q) || s.address.toLowerCase().includes(q);
+        const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
+        const matchesDriver = driverFilter === 'ALL' || s.courier === driverFilter;
+        return matchesQ && matchesStatus && matchesDriver;
+      });
+
+      tbody.innerHTML = filtered.map(s => {
+        let statusBadge = 'bg-blue-100 text-blue-800 border-blue-200';
+        if (s.status === 'DELIVERED') statusBadge = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+        if (s.status === 'DELAYED') statusBadge = 'bg-rose-100 text-rose-800 border-rose-200';
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-3.5 font-mono font-bold text-blue-700">${s.id}</td>
+            <td class="p-3.5">
+              <div class="font-bold text-slate-900">${s.recipient}</div>
+              <div class="text-[11px] text-slate-500 truncate max-w-xs">${s.address}</div>
+            </td>
+            <td class="p-3.5 font-medium text-slate-700">${s.courier}</td>
+            <td class="p-3.5 text-slate-600 font-mono text-[11px]">${s.window}</td>
+            <td class="p-3.5">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded ${s.priority === 'URGENT' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'}">${s.priority}</span>
+            </td>
+            <td class="p-3.5">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusBadge}">${s.status.replace('_', ' ')}</span>
+            </td>
+            <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
+              <button onclick="toggleShipmentStatus('${s.id}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold" title="Advance status">
+                Toggle Status
+              </button>
+              <button onclick="deleteShipment('${s.id}')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200" title="Delete shipment">
+                Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function applyAdminShipmentFilter() {
+      renderAdminShipmentsTable();
+    }
+
+    function toggleShipmentStatus(id) {
+      const s = ADMIN_SHIPMENTS.find(x => x.id === id);
+      if (s) {
+        if (s.status === 'ASSIGNED') s.status = 'IN_TRANSIT';
+        else if (s.status === 'IN_TRANSIT') s.status = 'DELIVERED';
+        else s.status = 'ASSIGNED';
+        renderAdminShipmentsTable();
+        showToast(`Updated shipment ${id} to ${s.status}.`, 'info');
+        playBeep(480, 0.04);
+      }
+    }
+
+    function deleteShipment(id) {
+      const idx = ADMIN_SHIPMENTS.findIndex(x => x.id === id);
+      if (idx !== -1) {
+        ADMIN_SHIPMENTS.splice(idx, 1);
+        renderAdminShipmentsTable();
+        showToast(`Removed shipment ${id} from dispatch manifest.`, 'info');
+        playBeep(400, 0.06);
+      }
+    }
+
+    function updateDriverFilterOptions() {
+      const select = document.getElementById('adminDriverFilter');
+      const shipmentCourierSelect = document.getElementById('newShipmentCourier');
+
+      if (select) {
+        const currentVal = select.value;
+        select.innerHTML = `<option value="ALL">All Drivers</option>` + ADMIN_DRIVERS.map(d => `
+          <option value="${d.name}">${d.name} (#${d.vanId})</option>
+        `).join('');
+        if (currentVal) select.value = currentVal;
+      }
+
+      if (shipmentCourierSelect) {
+        shipmentCourierSelect.innerHTML = ADMIN_DRIVERS.map(d => `
+          <option value="${d.name}">${d.name} (#${d.vanId} • ${d.hub})</option>
+        `).join('');
+      }
+    }
+
+    function openNewShipmentModal() {
+      updateDriverFilterOptions();
+      const modal = document.getElementById('newShipmentModal');
+      if (modal) modal.classList.remove('hidden');
+      playBeep(520, 0.04);
+      lucide.createIcons();
+    }
+
+    function closeNewShipmentModal() {
+      const modal = document.getElementById('newShipmentModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function submitNewShipment(event) {
+      event.preventDefault();
+      const recipient = document.getElementById('newShipmentRecipient')?.value.trim();
+      const address = document.getElementById('newShipmentAddress')?.value.trim();
+      const courier = document.getElementById('newShipmentCourier')?.value || (ADMIN_DRIVERS[0] ? ADMIN_DRIVERS[0].name : 'Alex Mercer');
+      const windowTime = document.getElementById('newShipmentWindow')?.value.trim() || '02:00 PM - 03:30 PM';
+      const priority = document.getElementById('newShipmentPriority')?.value || 'STANDARD';
+      const status = document.getElementById('newShipmentStatus')?.value || 'ASSIGNED';
+
+      if (!recipient || !address) {
+        showToast('Please provide recipient name and destination address.', 'error');
+        return;
+      }
+
+      const newId = `NX-${Math.floor(9045 + Math.random() * 900)}`;
+      const newShipment = {
+        id: newId,
+        recipient: recipient,
+        address: address,
+        courier: courier,
+        window: windowTime,
+        priority: priority,
+        status: status
+      };
+
+      ADMIN_SHIPMENTS.unshift(newShipment);
+      renderAdminShipmentsTable();
+
+      const kpiTotal = document.getElementById('kpiTotalPackages');
+      if (kpiTotal) kpiTotal.innerText = `${1482 + ADMIN_SHIPMENTS.length - 7}`;
+
+      closeNewShipmentModal();
+      document.getElementById('newShipmentForm')?.reset();
+      showToast(`Dispatched shipment ${newId} to ${recipient} via ${courier}!`, 'success');
+      playSuccessChime();
+    }
+
+    function exportAdminCsv() {
+      let csv = 'ShipmentID,Recipient,Address,Courier,Window,Priority,Status\n';
+      ADMIN_SHIPMENTS.forEach(s => {
+        csv += `"${s.id}","${s.recipient}","${s.address}","${s.courier}","${s.window}","${s.priority}","${s.status}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `amazon_route_master_manifest_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Exported Amazon Route master manifest CSV successfully.', 'success');
+    }
+
+    /* =======================================================================
+       6. COURIER ONBOARDING QUEUE
+       ======================================================================= */
+    function renderOnboardingQueue() {
+      const container = document.getElementById('onboardingQueueContainer');
+      if (!container) return;
+
+      if (ADMIN_ONBOARDING_QUEUE.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center bg-white border border-slate-300 rounded-2xl shadow-card">
+            <i data-lucide="check-circle-2" class="w-10 h-10 text-emerald-500 mx-auto mb-2"></i>
+            <h4 class="font-bold text-slate-800">All Registrations Processed</h4>
+            <p class="text-xs text-slate-500 mt-1">There are no pending driver onboarding submissions in the review queue.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = ADMIN_ONBOARDING_QUEUE.map(item => `
+        <div class="theme-card bg-white border border-slate-300 rounded-2xl p-4 shadow-card space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <img src="https://flagcdn.com/w40/${item.flagIso}.png" alt="${item.country}" class="w-6 h-4 object-cover rounded shadow-sm border border-slate-300">
+              <span class="font-bold text-sm text-slate-900">${item.name}</span>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+              ${item.status}
+            </span>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1 text-slate-600">
+            <div>Phone: <span class="font-mono text-slate-900 font-semibold">${item.phone}</span></div>
+            <div>Vehicle: <span class="text-slate-900 font-medium">${item.vehicle}</span></div>
+            <div>Assigned Area: <span class="text-slate-900 font-medium">${item.serviceArea}</span></div>
+          </div>
+
+          <div class="p-2 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-between text-xs text-blue-900">
+            <div class="flex items-center space-x-1.5 truncate">
+              <i data-lucide="file-check" class="w-3.5 h-3.5 text-blue-600 flex-shrink-0"></i>
+              <span class="truncate font-semibold">${item.rcFileName}</span>
+            </div>
+            <button onclick="inspectDriverRc('${item.id}')" class="text-[11px] text-blue-700 underline font-semibold whitespace-nowrap ml-2">
+              Inspect RC
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="approveCourier('${item.id}')" class="py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs btn-solid-white shadow-sm">
+              Approve
+            </button>
+            <button onclick="rejectCourier('${item.id}')" class="py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-xs">
+              Reject
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function approveCourier(id) {
+      const idx = ADMIN_ONBOARDING_QUEUE.findIndex(x => x.id === id);
+      if (idx !== -1) {
+        const item = ADMIN_ONBOARDING_QUEUE[idx];
+        const newDrvId = `DRV-${Math.floor(200 + Math.random() * 700)}`;
+        const newVanId = `VAN-${Math.floor(450 + Math.random() * 40)}`;
+
+        ADMIN_DRIVERS.push({
+          id: newDrvId,
+          name: item.name,
+          vanId: newVanId,
+          vehicleModel: item.vehicle,
+          plate: `DL-99-${item.flagIso.toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          hub: item.serviceArea.includes('North') ? 'North Terminal WH-04' : (item.serviceArea.includes('Downtown') ? 'Downtown Port WH-09' : 'Midtown Central WH-01'),
+          packagesAssigned: 12,
+          packagesDelivered: 0,
+          batteryPct: 100,
+          status: 'EN_ROUTE',
+          lat: 40.752 + (Math.random() - 0.5) * 0.03,
+          lng: -73.982 + (Math.random() - 0.5) * 0.03,
+          rcVerified: true,
+          phone: item.phone
+        });
+
+        ADMIN_ONBOARDING_QUEUE.splice(idx, 1);
+        renderOnboardingQueue();
+        renderAdminDriversTable();
+        updateDriverFilterOptions();
+        initAdminFleetMap();
+
+        const countBadge = document.getElementById('badgeDriversCount');
+        if (countBadge) countBadge.innerText = `${ADMIN_DRIVERS.length} Vans`;
+
+        const kpiActive = document.getElementById('kpiActiveVans');
+        if (kpiActive) kpiActive.innerText = `${ADMIN_DRIVERS.length} / 28`;
+
+        const pendingBadge = document.getElementById('onboardingPendingBadge');
+        if (pendingBadge) pendingBadge.innerText = `${ADMIN_ONBOARDING_QUEUE.length} Pending Review`;
+
+        showToast(`Approved courier ${item.name}! Added to live fleet roster as #${newVanId}.`, 'success');
+        playSuccessChime();
+      }
+    }
+
+    function rejectCourier(id) {
+      const idx = ADMIN_ONBOARDING_QUEUE.findIndex(x => x.id === id);
+      if (idx !== -1) {
+        const item = ADMIN_ONBOARDING_QUEUE[idx];
+        ADMIN_ONBOARDING_QUEUE.splice(idx, 1);
+        renderOnboardingQueue();
+
+        const pendingBadge = document.getElementById('onboardingPendingBadge');
+        if (pendingBadge) pendingBadge.innerText = `${ADMIN_ONBOARDING_QUEUE.length} Pending Review`;
+
+        showToast(`Application for ${item.name} (${id}) rejected.`, 'warning');
+        playBeep(380, 0.08);
+      }
+    }
+
+    /* =======================================================================
+       7. AI TSP GLOBAL OPTIMIZER & BOTTLENECK ACTIONS
+       ======================================================================= */
+    function resolveBottleneck(id, vanId) {
+      const el = document.getElementById(`bottleneck-${id}`);
+      if (el) {
+        el.innerHTML = `
+          <div class="flex items-center justify-between text-emerald-800">
+            <span class="font-semibold text-xs">✓ Rerouted ${vanId} around choke point</span>
+            <span class="text-[10px] bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300 font-bold">OPTIMIZED</span>
+          </div>
+          <p class="text-emerald-700 text-[11px] mt-0.5">Delay reduced from +20m to 0m via dynamic detour.</p>
+        `;
+        el.className = 'p-2.5 rounded-xl bg-emerald-50 border border-emerald-200';
+        showToast(`Rerouted van ${vanId}. Bottleneck bypassed successfully!`, 'success');
+        playSuccessChime();
+
+        const countEl = document.getElementById('bottleneckCountBadge');
+        if (countEl) countEl.innerText = '1 Alert';
+      }
+    }
+
+    function runGlobalTspOptimizer() {
+      const panel = document.getElementById('optimizerProgressPanel');
+      const bar = document.getElementById('optimizerProgressBar');
+      const percent = document.getElementById('optimizerPercent');
+      const statusText = document.getElementById('optimizerStatusText');
+      if (!panel) return;
+
+      panel.classList.remove('hidden');
+      playBeep(480, 0.05);
+
+      let p = 0;
+      const interval = setInterval(() => {
+        p += 20;
+        if (bar) bar.style.width = `${p}%`;
+        if (percent) percent.innerText = `${p}%`;
+
+        if (p === 40 && statusText) statusText.innerText = 'Analyzing traffic choke points...';
+        if (p === 80 && statusText) statusText.innerText = 'Calculating optimal multi-van TSP sequences...';
+
+        if (p >= 100) {
+          clearInterval(interval);
+          if (statusText) statusText.innerText = 'TSP Complete: 412 km (-29.5% distance saved across all vans)!';
+          
+          const kpiDist = document.getElementById('kpiDistanceSaved');
+          if (kpiDist) kpiDist.innerText = '489.2 km';
+
+          showToast('Global AI TSP Optimization complete. All 24 vans re-routed optimally.', 'success');
+          playSuccessChime();
+        }
+      }, 250);
+    }
+
+    /* =======================================================================
+       8. SLA ANALYTICS CHARTS
+       ======================================================================= */
+    let hourlyChartInstance = null;
+    let sectorChartInstance = null;
+
+    function initAdminCharts() {
+      const ctxHourly = document.getElementById('adminHourlyChart');
+      if (ctxHourly && !hourlyChartInstance) {
+        hourlyChartInstance = new Chart(ctxHourly, {
+          type: 'bar',
+          data: {
+            labels: ['08 AM', '10 AM', '12 PM', '02 PM', '04 PM', '06 PM'],
+            datasets: [{
+              label: 'Packages Handed Over',
+              data: [120, 310, 480, 350, 180, 42],
+              backgroundColor: '#2563EB',
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#475569' } },
+              x: { grid: { display: false }, ticks: { color: '#475569' } }
+            }
+          }
+        });
+      }
+
+      const ctxSector = document.getElementById('adminSectorChart');
+      if (ctxSector && !sectorChartInstance) {
+        sectorChartInstance = new Chart(ctxSector, {
+          type: 'doughnut',
+          data: {
+            labels: ['North Terminal (99.2%)', 'Midtown (98.1%)', 'Downtown (97.8%)', 'Queens (98.5%)'],
+            datasets: [{
+              data: [38, 28, 20, 14],
+              backgroundColor: ['#2563EB', '#0284C7', '#10B981', '#F59E0B']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+          }
+        });
+      }
+    }
+
+    /* =======================================================================
+       9. ALEXA VOICE & ADMIN SKILL SIMULATOR
+       ======================================================================= */
+    function openAlexaModal() {
+      document.getElementById('alexaModal').classList.remove('hidden');
+      playBeep(520, 0.05);
+      lucide.createIcons();
+    }
+
+    function closeAlexaModal() {
+      document.getElementById('alexaModal').classList.add('hidden');
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    function executeCustomAlexa() {
+      const input = document.getElementById('alexaCustomInput');
+      if (!input || !input.value.trim()) return;
+      const q = input.value.trim();
+      testAdminAlexaUtterance(q);
+      input.value = '';
+    }
+
+    function testAdminAlexaUtterance(text) {
+      const out = document.getElementById('alexaAdminSpokenText');
+      const lower = text.toLowerCase();
+      let reply = '';
+
+      if (lower.includes('optimize') || lower.includes('reroute') || lower.includes('tsp')) {
+        reply = "Executing global AI TSP optimization for all fleet vans. Real-time rerouting saved 41.2 kilometers.";
+        triggerGlobalFleetReroute();
+      } else if (lower.includes('delay') || lower.includes('traffic') || lower.includes('late')) {
+        const delayedCount = ADMIN_SHIPMENTS.filter(s => s.status === 'DELAYED').length;
+        reply = `Currently ${delayedCount || 2} delivery routes are flagged for traffic delays along Harbor Boulevard and Midtown Tunnel.`;
+      } else if (lower.includes('driver') || lower.includes('roster') || lower.includes('van')) {
+        reply = `There are currently ${ADMIN_DRIVERS.length} drivers on the roster with 8 active on the live delivery grid.`;
+      } else if (lower.includes('package') || lower.includes('manifest') || lower.includes('delivered')) {
+        const deliveredCount = ADMIN_SHIPMENTS.filter(s => s.status === 'DELIVERED').length;
+        reply = `Master manifest tracking 1,482 total packages with ${deliveredCount} verified delivered and 98.4% on-time SLA punctuality.`;
+      } else {
+        const foundDriver = ADMIN_DRIVERS.find(d => lower.includes(d.name.toLowerCase()));
+        if (foundDriver) {
+          reply = `${foundDriver.name} in van ${foundDriver.vanId} has completed ${foundDriver.packagesDelivered} of ${foundDriver.packagesAssigned} stops with ${foundDriver.batteryPct}% EV battery.`;
+        } else {
+          reply = `Amazon Route voice command received: "${text}". Fleet status operational, all regional hubs green.`;
+        }
+      }
+
+      if (out) out.innerText = `"${reply}"`;
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(reply);
+        utter.rate = 1.05;
+        window.speechSynthesis.speak(utter);
+      }
+      showToast(`Alexa Voice Intent Executed: "${text}"`, 'success');
+      playSuccessChime();
+    }
+
+    /* =======================================================================
+       10. UTILITIES, AUDIO & REDIRECTS
+       ======================================================================= */
+    function toggleAdminSidebar() {
+      const sb = document.getElementById('adminSidebar');
+      if (sb) {
+        sb.classList.toggle('hidden');
+      }
+    }
+
+    function returnToDriverPortal() {
+      showToast('Switching to Amazon Route Driver Portal...', 'info');
+      setTimeout(() => {
+        if (document.referrer && document.referrer.length > 5 && !document.referrer.includes('amazoun-routebacking')) {
+          window.location.href = document.referrer;
+        } else if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = 'aws.html';
+        }
+      }, 350);
+    }
+
+    function handleAdminLogout() {
+      showToast('Logged out of Admin Session. Returning to login...', 'info');
+      setTimeout(() => {
+        if (document.referrer && document.referrer.length > 5 && !document.referrer.includes('amazoun-routebacking')) {
+          window.location.href = document.referrer;
+        } else if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = 'aws.html';
+        }
+      }, 400);
+    }
+
+    const audioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
+    function playBeep(freq = 520, dur = 0.06) {
+      if (!audioCtx) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function playSuccessChime() {
+      playBeep(440, 0.08);
+      setTimeout(() => playBeep(660, 0.12), 90);
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      let badgeColor = 'bg-blue-600 text-white';
+      if (type === 'success') badgeColor = 'bg-emerald-600 text-white';
+      if (type === 'warning') badgeColor = 'bg-amber-600 text-white';
+      if (type === 'error') badgeColor = 'bg-rose-600 text-white';
+
+      toast.className = `p-3.5 rounded-xl ${badgeColor} shadow-xl flex items-center space-x-2.5 text-xs font-semibold animate-slideUp pointer-events-auto`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    /* Initialize Admin On Load */
+    window.addEventListener('DOMContentLoaded', () => {
+      const dateEl = document.getElementById('currentLiveDateAdmin');
+      if (dateEl) {
+        const opts = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+        dateEl.innerText = `${new Date().toLocaleDateString('en-US', opts)} • Master Fleet Operations Window`;
+      }
+      renderAdminDriversTable();
+      renderAdminShipmentsTable();
+      renderOnboardingQueue();
+      updateDriverFilterOptions();
+      initAdminFleetMap();
+      lucide.createIcons();
+    });
+  </script>
+
+</body>
+</html>
+
+                                                                                                                                               
